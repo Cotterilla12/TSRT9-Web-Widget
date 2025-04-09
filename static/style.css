@@ -1,0 +1,105 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: #f0f0f0;
+}
+
+#mainTitle {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #003366;
+    border-bottom: 2px solid #aaa;
+    padding-bottom: 10px;
+}
+
+.top-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+
+#mainTextBox {
+    width: 100%;
+    height: 100px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    padding: 10px;
+    resize: none;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.button-row button {
+    flex: 1;
+    padding: 8px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: white;
+}
+
+#taxonomyMenuSingle {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 100px;
+}
+
+.taxonomy-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.taxonomy-entry button {
+    padding: 6px 10px;
+    background-color: #fff;
+    border: 1px solid #000000;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.taxonomy-entry .description {
+    max-width: 800px;
+}
+
+.menu-container {
+    display: flex;
+    width: 100%;
+}
+
+.left-bar {
+    width: 30%;
+    padding: 10px;
+    background-color: #fff;
+    border-right: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.left-bar button {
+    width: 100%;
+    background-color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    border: 1px solid #000000;
+}
+
+.right-content {
+    width: 70%;
+    padding-top: 10px;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.taxonomy-container {
+    margin-top: 230px;
+}

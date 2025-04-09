@@ -1,0 +1,25 @@
+﻿Category,Code,Description
+1: Individual,CF 1a,Failure to recognise hazard (knowledge-based etc)
+1: Individual,CF 1b,Decision making process (rule-based or old or invalid rule used etc)
+1: Individual,CF 1c,"Slips and lapses (skill-based, involuntary automaticity etc)"
+1: Individual,CF 1d,"Communication (inaccuracy or omission of verbal, written etc)"
+1: Individual,CF 1e,"Violation (deliberate action, acting outside scope etc)"
+2: Procedural,CF 2a,No procedures / protocols (not in place or unavailable etc)
+2: Procedural,CF 2b,Inadequate procedures / protocols
+2: Procedural,CF 2c,Adherence to procedures / protocols
+2: Procedural,CF 2d,Process design (impractical and inefficient processes etc)
+3: Technical,CF 3a,Equipment or IT network failure (including immobilisation & accessories)
+3: Technical,CF 3b,Commissioning/ calibration/ maintenance (including immobilisation & accessories)
+3: Technical,CF 3c,Device / Product design
+4: Patient-Related,CF 4a,Medical condition (inability to remain still etc)
+4: Patient-Related,CF 4b,"Communication with the patient (language issues, comprehension etc)"
+4: Patient-Related,CF 4c,Non-compliance
+5: Teamwork/Management/Organisational,CF 5a,"Inadequate leadership (inadequate supervision, congruence or consistency etc)"
+5: Teamwork/Management/Organisational,CF 5b,Unclear responsibilities and lines of accountability (across the radiotherapy pathway)
+5: Teamwork/Management/Organisational,CF 5c,Inadequate capital resources (equipment in use no longer fit for purpose etc)
+5: Teamwork/Management/Organisational,CF 5d,Inadequate staffing (insufficient staffing levels or skill mix necessary to meet the demands of a service etc)
+5: Teamwork/Management/Organisational,CF 5e,Inadequate training (inadequate or lack of training etc)
+5: Teamwork/Management/Organisational,CF 5f,Inadequate risk assessment (poor change management etc)
+6: Environmental,CF 6a,"Physical (power cut, control area excessively noisy, distractions etc)"
+6: Environmental,CF 6b,"Natural factors (fire, flood etc)"
+7: Other,CF7a,Other

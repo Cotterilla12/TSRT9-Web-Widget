@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TSRT9</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="top-container">
+        <h1 id="mainTitle">TSRT9 Error Code Generator</h1>
+        <textarea id="mainTextBox" readonly>
+TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)
+        </textarea>
+        <div class="button-row">
+            <button id="SLBtn" onclick="showSeverityOptions()">Severity Level</button>
+            <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
+            <button id="MoDBtn">Method of Detection</button>
+            <button id="CFBtn">Causative Factors</button>
+            <button onclick="clearText()">Clear</button>
+        </div>
+    </div>
+
+    <!-- Dynamic menus for taxonomy entries -->
+    <div class="taxonomy-container">
+        <h2 id="taxonomyTitle"></h2>
+        <div id="taxonomyMenuSingle" style="display:none"></div>
+        <div id="taxonomyMenu" style="display:none">
+            <div class="menu-container">
+                <div class="left-bar" id="leftContent"></div>
+                <div class="right-content" id="rightContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSeverityOptions() {
+            document.getElementById("taxonomyMenu").style.display = 'none';
+            const menu = document.getElementById("taxonomyMenuSingle");
+            menu.innerHTML = 'Loading Severity Levels';
+            menu.style.display = 'block';
+
+            fetch("/api/severity")
+                .then(res => res.json())
+                .then(data => {
+                    menu.innerHTML = '';
+                    Object.entries(data).forEach(([level, detailDict]) => {
+                        const [label, description] = Object.entries(detailDict)[0];
+
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
+
+                        const button = document.createElement("button");
+                        button.textContent = level;
+                        button.onclick = () => insertSeverity(level);
+
+                        const desc = document.createElement("div");
+                        desc.className = "description";
+                        desc.innerHTML = `<strong>${label}</strong> – ${description}`;
+
+                        wrapper.appendChild(button);
+                        wrapper.appendChild(desc);
+                        menu.appendChild(wrapper);
+                    });
+                })
+                .catch(err => {
+                    menu.innerHTML = '<p style="color:red;">Failed to load severity levels.</p>';
+                    console.error(err);
+                });
+        }
+
+        function insertSeverity(level) {
+            const tb = document.getElementById("mainTextBox");
+            if (tb.value.includes("(Severity Level)")) {
+                tb.value = tb.value.replace("(Severity Level)", level);
+            }
+            else {
+                tb.value = tb.value.replace(/Level\s*\d+/, level);
+            }
+            document.getElementById("taxonomyMenuSingle").style.display = 'none';
+            document.getElementById("SLBtn").style.backgroundColor = "green";
+        }
+
+        function showPCOptions() {
+            document.getElementById("taxonomyMenuSingle").style.display = 'none';
+            const menu = document.getElementById("leftContent");
+            menu.innerHTML = 'Loading Pathway Code Categories';
+            document.getElementById("taxonomyMenu").style.display = 'block';
+
+            fetch("/api/pathwaycodes")
+                .then(res => res.json())
+                .then(data => {
+                    menu.innerHTML = '';
+                    Object.entries(data).forEach((category) => {
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
+
+                        const button = document.createElement("button");
+                        button.textContent = category[1];
+                        button.onclick = () => displayPCcategory(category[1]);
+
+                        wrapper.appendChild(button);
+                        menu.appendChild(wrapper);
+                    });
+                })
+                .catch(err => {
+                    menu.innerHTML = '<p style="color:red;">Failed to load pathway codes.</p>';
+                    console.error(err);
+                });
+        }
+
+        function displayPCcategory(category){
+            const menu = document.getElementById("rightContent");
+            menu.innerHTML = 'Loading Pathway Codes';
+
+            fetch(`/api/pathwaycodes/${category}`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Received data:", data);
+                    menu.innerHTML = '';
+                    Object.entries(data).forEach(([code, detailList]) => {
+                    const label = detailList[0];
+                    const SB = detailList[1] || ""; // fallback to empty if null
+
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "taxonomy-entry";
+
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.value = label;
+                    checkbox.id = `cb-${code}`;
+
+                    const checkboxLabel = document.createElement("label");
+                    checkboxLabel.htmlFor = checkbox.id;
+                    checkboxLabel.innerHTML = SB ? `${code}: <strong>${SB}</strong> – ${label}` : `${code}: ${label}`;
+
+                    wrapper.appendChild(checkbox);
+                    wrapper.appendChild(checkboxLabel);
+                    menu.appendChild(wrapper);
+                    });
+                })
+                .catch(err => {
+                    menu.innerHTML = '<p style="color:red;">Failed to load pathway codes.</p>';
+                    console.error(err);
+                });
+        }
+
+        function clearText() {
+            document.getElementById("mainTextBox").value =
+                "TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)";
+            document.getElementById("taxonomyMenuSingle").style.display = 'none';
+            document.getElementById("taxonomyMenu").style.display = 'none';
+            document.getElementById("SLBtn").style.backgroundColor = "white";
+            document.getElementById("PCBtn").style.backgroundColor = "white";
+            document.getElementById("MoDBtn").style.backgroundColor = "white";
+            document.getElementById("CFBtn").style.backgroundColor = "white";
+        }
+    </script>
+</body>
+</html>
