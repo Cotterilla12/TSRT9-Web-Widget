@@ -56,7 +56,7 @@ def api_severity():
     return jsonify(severityLevels)
 
 @app.route("/api/pathwaycodes", defaults={"category": None})
-@app.route("/api/pathwaycodes/<category>")
+@app.route("/api/pathwaycodes/<path:category>")
 def api_pathway(category=""):
     if category is None:
         return jsonify(sorted(list(pathwayCodes.keys()), key = lambda x: int(x.split(":")[0])))
@@ -66,7 +66,7 @@ def api_pathway(category=""):
         return jsonify({"error": f"Category '{category}' not found"}), 404
 
 @app.route("/api/causativefactors", defaults={"category": None})
-@app.route("/api/causativefactors/<category>")
+@app.route("/api/causativefactors/<path:category>")
 def api_causative(category):
     if category is None:
         return jsonify(sorted(list(causativeFactors.keys()), key = lambda x: int(x.split(":")[0])))

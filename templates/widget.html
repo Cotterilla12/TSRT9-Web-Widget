@@ -14,8 +14,8 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
         <div class="button-row">
             <button id="SLBtn" onclick="showSeverityOptions()">Severity Level</button>
             <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
-            <button id="MoDBtn">Method of Detection</button>
-            <button id="CFBtn">Causative Factors</button>
+            <button id="MoDBtn" onclick="showMoDOptions()">Method of Detection</button>
+            <button id="CFBtn" onclick="showCFOptions()">Causative Factors</button>
             <button onclick="clearText()">Clear</button>
         </div>
     </div>
@@ -81,6 +81,8 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
 
         function showPCOptions() {
             document.getElementById("taxonomyMenuSingle").style.display = 'none';
+            document.getElementById("leftContent").innerHTML = '';
+            document.getElementById("rightContent").innerHTML = '';
             const menu = document.getElementById("leftContent");
             menu.innerHTML = 'Loading Pathway Code Categories';
             document.getElementById("taxonomyMenu").style.display = 'block';
@@ -114,7 +116,6 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
             fetch(`/api/pathwaycodes/${category}`)
                 .then(res => res.json())
                 .then(data => {
-                    console.log("Received data:", data);
                     menu.innerHTML = '';
                     Object.entries(data).forEach(([code, detailList]) => {
                     const label = detailList[0];
@@ -139,6 +140,132 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
                 })
                 .catch(err => {
                     menu.innerHTML = '<p style="color:red;">Failed to load pathway codes.</p>';
+                    console.error(err);
+                });
+        }
+
+        function showMoDOptions() {
+            document.getElementById("taxonomyMenuSingle").style.display = 'none';
+            document.getElementById("leftContent").innerHTML = '';
+            document.getElementById("rightContent").innerHTML = '';
+            const menu = document.getElementById("leftContent");
+            menu.innerHTML = 'Loading Method of Detection Categories';
+            document.getElementById("taxonomyMenu").style.display = 'block';
+
+            fetch("/api/pathwaycodes")
+                .then(res => res.json())
+                .then(data => {
+                    menu.innerHTML = '';
+                    Object.entries(data).forEach((category) => {
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
+
+                        const button = document.createElement("button");
+                        button.textContent = category[1];
+                        button.onclick = () => displayMoDcategory(category[1]);
+
+                        wrapper.appendChild(button);
+                        menu.appendChild(wrapper);
+                    });
+                })
+                .catch(err => {
+                    menu.innerHTML = '<p style="color:red;">Failed to load methods of detection.</p>';
+                    console.error(err);
+                });
+        }
+
+        function displayMoDcategory(category){
+            const menu = document.getElementById("rightContent");
+            menu.innerHTML = 'Loading Methods of Detection';
+
+            fetch(`/api/pathwaycodes/${category}`)
+                .then(res => res.json())
+                .then(data => {
+                    menu.innerHTML = '';
+                    Object.entries(data).forEach(([code, detailList]) => {
+                    const label = detailList[0];
+                    const SB = detailList[1] || ""; // fallback to empty if null
+
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "taxonomy-entry";
+
+                    const button = document.createElement("button");
+                    button.textContent = code
+
+                    const buttonLabel = document.createElement("label");
+                    buttonLabel.innerHTML = SB ? `<strong>${SB}</strong> – ${label}` : label;
+
+                    wrapper.appendChild(button);
+                    wrapper.appendChild(buttonLabel);
+                    menu.appendChild(wrapper);
+                    });
+                })
+                .catch(err => {
+                    menu.innerHTML = '<p style="color:red;">Failed to load method of detection.</p>';
+                    console.error(err);
+                });
+        }
+
+        function showCFOptions() {
+            document.getElementById("taxonomyMenuSingle").style.display = 'none';
+            document.getElementById("leftContent").innerHTML = '';
+            document.getElementById("rightContent").innerHTML = '';
+            const menu = document.getElementById("leftContent");
+            menu.innerHTML = 'Loading Causative Factor Categories';
+            document.getElementById("taxonomyMenu").style.display = 'block';
+
+            fetch("/api/causativefactors")
+                .then(res => res.json())
+                .then(data => {
+                    menu.innerHTML = '';
+                    Object.entries(data).forEach((category) => {
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
+
+                        const button = document.createElement("button");
+                        button.textContent = category[1];
+                        button.onclick = () => displayCFcategory(category[1]);
+
+                        wrapper.appendChild(button);
+                        menu.appendChild(wrapper);
+                    });
+                })
+                .catch(err => {
+                    menu.innerHTML = '<p style="color:red;">Failed to load causative factors.</p>';
+                    console.error(err);
+                });
+        }
+
+        function displayCFcategory(category){
+            const menu = document.getElementById("rightContent");
+            menu.innerHTML = 'Loading Causative Factors';
+
+            fetch(`/api/causativefactors/${category}`)
+                .then(res => res.json())
+                .then(data => {
+                    menu.innerHTML = '';
+                    Object.entries(data).forEach(([code, detailList]) => {
+                    const label = detailList;
+
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "taxonomy-entry";
+
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.value = label;
+                    checkbox.id = `cb-${code}`;
+
+                    const checkboxLabel = document.createElement("label");
+                    checkboxLabel.htmlFor = checkbox.id;
+                    checkboxLabel.innerHTML = `${code}: ${label}`;
+
+                    wrapper.appendChild(checkbox);
+                    wrapper.appendChild(checkboxLabel);
+                    menu.appendChild(wrapper);
+                    });
+                })
+                .catch(err => {
+                    menu.innerHTML = '<p style="color:red;">Failed to load causative factors.</p>';
                     console.error(err);
                 });
         }
