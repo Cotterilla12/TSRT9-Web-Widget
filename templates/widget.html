@@ -7,18 +7,21 @@
 </head>
 <body>
     <div class="top-container">
-        <!-- <h1 id="mainTitle">TSRT9 Error Code Generator</h1> -->
-        <textarea id="mainTextBox" readonly>
-TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)
-        </textarea>
+        <div class="textbox-wrapper">
+            <textarea id="mainTextBox" readonly>TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)</textarea>
+        </div>
+    </div>
+    
+    <div class="button-container">
         <div class="button-row">
             <button id="SLBtn" onclick="showSeverityOptions()">Severity Level</button>
             <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
             <button id="MoDBtn" onclick="showMoDOptions()">Method of Detection</button>
             <button id="CFBtn" onclick="showCFOptions()">Causative Factors</button>
-            <button onclick="clearText()">Clear</button>
+            <button id="ClearBtn" onclick="clearText()">Clear</button>
         </div>
     </div>
+    
 
     <!-- Dynamic menus for taxonomy entries -->
     <div class="taxonomy-container">
@@ -37,6 +40,7 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
             const menu = document.getElementById("taxonomyMenuSingle");
             menu.innerHTML = 'Loading Severity Levels';
             menu.style.display = 'block';
+            toggleMenuButtons("SLBtn");
 
             fetch("/api/severity")
                 .then(res => res.json())
@@ -50,7 +54,12 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
 
                         const button = document.createElement("button");
                         button.textContent = level;
-                        button.onclick = () => insertSeverity(level);
+                        button.id = "btn" + level.split(" ").join("");
+                        button.classList.add("toggle-button");
+                        button.onclick = () => {
+                            insertSeverity(level);
+                            toggleButtons(button.id, "taxonomyMenuSingle");
+                        }
 
                         const desc = document.createElement("div");
                         desc.className = "description";
@@ -59,12 +68,38 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
                         wrapper.appendChild(button);
                         wrapper.appendChild(desc);
                         menu.appendChild(wrapper);
+
+                        if (document.getElementById("mainTextBox").value.includes(level)){
+                            toggleButtons(button.id, "taxonomyMenuSingle")
+                        }
                     });
                 })
                 .catch(err => {
                     menu.innerHTML = '<p style="color:red;">Failed to load severity levels.</p>';
                     console.error(err);
                 });
+        }
+
+        function checkComplete(){
+            updateMenuButtonStatus();
+        }
+
+        function copyToClipboard(){
+            const tbString = document.getElementById("mainTextBox").value;
+            navigator.clipboard.writeText(tbString);
+        }
+
+        function toggleButtons(btnID, parentID) {
+            const btnOfInterest = document.getElementById(btnID);
+            const parent = document.getElementById(parentID);
+
+            const buttons = parent.querySelectorAll(".toggle-button");
+
+            buttons.forEach(button => {
+                button.classList.remove("selected-button");
+            });
+
+            btnOfInterest.classList.add("selected-button");
         }
 
         function insertSeverity(level) {
@@ -75,8 +110,7 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
             else {
                 tb.value = tb.value.replace(/Level\s*\d+/, level);
             }
-            document.getElementById("taxonomyMenuSingle").style.display = 'none';
-            document.getElementById("SLBtn").style.backgroundColor = "green";
+            checkComplete();
         }
 
         function showPCOptions() {
@@ -86,6 +120,7 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
             const menu = document.getElementById("leftContent");
             menu.innerHTML = 'Loading Pathway Code Categories';
             document.getElementById("taxonomyMenu").style.display = 'block';
+            toggleMenuButtons("PCBtn");
 
             fetch("/api/pathwaycodes")
                 .then(res => res.json())
@@ -97,7 +132,12 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
 
                         const button = document.createElement("button");
                         button.textContent = category[1];
-                        button.onclick = () => displayPCcategory(category[1]);
+                        button.classList.add("toggle-button");
+                        button.id = "btn" + category[1].split(":")[0];
+                        button.onclick = () => {
+                            displayPCcategory(category[1]);
+                            toggleButtons(button.id, "leftContent");
+                        }
 
                         wrapper.appendChild(button);
                         menu.appendChild(wrapper);
@@ -117,31 +157,159 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
-                    Object.entries(data).forEach(([code, detailList]) => {
-                    const label = detailList[0];
-                    const SB = detailList[1] || ""; // fallback to empty if null
+                    sortCodes(Object.keys(data)).forEach(code => {
+                        const detailList = data[code];
+                        const label = detailList[0];
+                        const SB = detailList[1] || ""; // fallback to empty if null
 
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "taxonomy-entry";
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
 
-                    const checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.value = label;
-                    checkbox.id = `cb-${code}`;
+                        const checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.value = label;
+                        checkbox.id = `cb-${code}`;
+                        checkbox.checked = document.getElementById("mainTextBox").value.includes("/ " + code + " /");
+                        checkbox.onchange = () => addRemoveCode(code, "PC", checkbox.checked);
 
-                    const checkboxLabel = document.createElement("label");
-                    checkboxLabel.htmlFor = checkbox.id;
-                    checkboxLabel.innerHTML = SB ? `${code}: <strong>${SB}</strong> – ${label}` : `${code}: ${label}`;
+                        const checkboxLabel = document.createElement("label");
+                        checkboxLabel.htmlFor = checkbox.id;
+                        checkboxLabel.innerHTML = SB ? `${code}: <strong>${SB}</strong> – ${label}` : `${code}: ${label}`;
 
-                    wrapper.appendChild(checkbox);
-                    wrapper.appendChild(checkboxLabel);
-                    menu.appendChild(wrapper);
+                        wrapper.appendChild(checkbox);
+                        wrapper.appendChild(checkboxLabel);
+                        menu.appendChild(wrapper);
                     });
                 })
                 .catch(err => {
                     menu.innerHTML = '<p style="color:red;">Failed to load pathway codes.</p>';
                     console.error(err);
-                });
+                }
+            );
+        }
+
+        function addRemoveCode(code, taxonomy, addBool) {
+            tb = document.getElementById("mainTextBox");
+            tbString = tb.value;
+            tbList = tbString.split(" / ");
+
+            let placeholder = "";
+            if (taxonomy == "PC"){
+                placeholder = "(Pathway Codes)";
+            } else if (taxonomy == "MoD"){
+                placeholder = "(Method of Detection)";
+            } else if (taxonomy == "CF"){
+                placeholder = "(Causative Factors)";
+            }
+            
+            let MoDPoint = -1
+            for (let i = 3; i < tbList.length; i++){
+                if (tbList[i].includes("MD") || tbList[i].includes("(Method of Detection)")){
+                    MoDPoint = i;
+                    break;
+                }
+            }
+
+            let levelTax = tbList.slice(0, 2);
+            let PCTax = tbList.slice(2, MoDPoint);
+            let MoDTax = tbList[MoDPoint];
+            let CFTax = tbList.slice(MoDPoint + 1);
+
+            let taxonomyToEdit = [];
+            if (taxonomy == "PC"){
+                taxonomyToEdit = PCTax;
+            } else if (taxonomy == "MoD"){
+                taxonomyToEdit = MoDTax;
+            } else if (taxonomy == "CF"){
+                taxonomyToEdit = CFTax;
+            }
+
+            if (taxonomyToEdit.length == 1 && taxonomyToEdit[0] == placeholder && taxonomy != "MoD"){
+                taxonomyToEdit = [];
+            }
+
+            if(addBool && taxonomy != "MoD"){
+                if (!taxonomyToEdit.includes(code)){
+                    taxonomyToEdit = sortCodes(taxonomyToEdit.concat(code));
+                }
+            } else if (addBool && taxonomy == "MoD"){
+                taxonomyToEdit = "MD" + code;
+            } else {
+                const index = taxonomyToEdit.indexOf(code);
+                if(index != -1){
+                    taxonomyToEdit.splice(index, 1);
+                }
+                if (taxonomyToEdit.length === 0) {
+                    taxonomyToEdit.push(placeholder);
+                }
+            }
+
+            let fullTaxonomy = []
+            if (taxonomy == "PC"){
+                fullTaxonomy = levelTax.concat(sortCodes(taxonomyToEdit), MoDTax, sortCodes(CFTax));
+            } else if (taxonomy == "MoD"){
+                fullTaxonomy = levelTax.concat(sortCodes(PCTax), taxonomyToEdit, sortCodes(CFTax));
+            } else if (taxonomy == "CF"){
+                fullTaxonomy = levelTax.concat(sortCodes(PCTax), MoDTax, sortCodes(taxonomyToEdit));
+            }
+
+            tb.value = fullTaxonomy.join(" / ")
+            checkComplete();
+        }
+
+        function isNumeric(n) {
+            return !isNaN(parseFloat(n)) && isFinite(n);
+        }
+
+        function toggleMenuButtons(activeBtnID) {
+            const buttons = document.querySelectorAll(".button-row button");
+
+            buttons.forEach(btn => {
+                btn.classList.remove("selected-button");
+            });
+
+            const activeBtn = document.getElementById(activeBtnID);
+            if (activeBtn) {
+                activeBtn.classList.add("selected-button");
+            }
+        }
+
+
+        function sortCodes(codes){
+            const example = codes[0];
+
+            let prefix = "";
+            for (i = 0; i < example.length; i++){
+                if(isNumeric(example[i])){
+                    prefix = example.slice(0, i);
+                    break;
+                }
+            }
+
+            let splitCodes = [];
+
+            for (j = 0; j < codes.length; j++){
+                let index = -1;
+
+                for (k = prefix.length; k < codes[j].length; k++){
+                    if(!isNumeric(codes[j][k])){
+                        index = k;
+                        break;
+                    }
+                }
+
+                splitCodes.push([prefix, codes[j].slice(prefix.length, index), codes[j].slice(index)]);
+            }
+
+            splitCodes.sort((a, b) => {
+                const numA = parseInt(a[1], 10);
+                const numB = parseInt(b[1], 10);
+                if (numA !== numB) return numA - numB;
+                if (a[2].length !== b[2].length) return a[2].length - b[2].length;
+                return a[2].localeCompare(b[2]);
+            });
+
+            return splitCodes.map(parts => prefix + parts[1] + parts[2]);
         }
 
         function showMoDOptions() {
@@ -151,6 +319,7 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
             const menu = document.getElementById("leftContent");
             menu.innerHTML = 'Loading Method of Detection Categories';
             document.getElementById("taxonomyMenu").style.display = 'block';
+            toggleMenuButtons("MoDBtn");
 
             fetch("/api/pathwaycodes")
                 .then(res => res.json())
@@ -162,7 +331,12 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
 
                         const button = document.createElement("button");
                         button.textContent = category[1];
-                        button.onclick = () => displayMoDcategory(category[1]);
+                        button.id = "btnMoDCategory" + category[1].replace(/\s+/g, "");
+                        button.classList.add("toggle-button");
+                        button.onclick = () => {
+                            displayMoDcategory(category[1]);
+                            toggleButtons(button.id, "leftContent");
+                        }
 
                         wrapper.appendChild(button);
                         menu.appendChild(wrapper);
@@ -182,22 +356,33 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
-                    Object.entries(data).forEach(([code, detailList]) => {
-                    const label = detailList[0];
-                    const SB = detailList[1] || ""; // fallback to empty if null
+                    sortCodes(Object.keys(data)).forEach(code => {
+                        const detailList = data[code];
+                        const label = detailList[0];
+                        const SB = detailList[1] || ""; // fallback to empty if null
 
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "taxonomy-entry";
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
 
-                    const button = document.createElement("button");
-                    button.textContent = code
+                        const button = document.createElement("button");
+                        button.textContent = code
+                        button.classList.add("toggle-button");
+                        button.id = "btn" + code;
+                        button.onclick = () => {
+                            addRemoveCode(code, "MoD", true);
+                            toggleButtons(button.id, "rightContent");
+                        }
 
-                    const buttonLabel = document.createElement("label");
-                    buttonLabel.innerHTML = SB ? `<strong>${SB}</strong> – ${label}` : label;
+                        const buttonLabel = document.createElement("label");
+                        buttonLabel.innerHTML = SB ? `<strong>${SB}</strong> – ${label}` : label;
 
-                    wrapper.appendChild(button);
-                    wrapper.appendChild(buttonLabel);
-                    menu.appendChild(wrapper);
+                        wrapper.appendChild(button);
+                        wrapper.appendChild(buttonLabel);
+                        menu.appendChild(wrapper);
+
+                        if (document.getElementById("mainTextBox").value.includes("MD" + code)){
+                            toggleButtons(button.id, "rightContent")
+                        }
                     });
                 })
                 .catch(err => {
@@ -213,6 +398,7 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
             const menu = document.getElementById("leftContent");
             menu.innerHTML = 'Loading Causative Factor Categories';
             document.getElementById("taxonomyMenu").style.display = 'block';
+            toggleMenuButtons("CFBtn");
 
             fetch("/api/causativefactors")
                 .then(res => res.json())
@@ -224,7 +410,12 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
 
                         const button = document.createElement("button");
                         button.textContent = category[1];
-                        button.onclick = () => displayCFcategory(category[1]);
+                        button.id = "btn" + category[1].replace(/\s+/g, "");
+                        button.classList.add("toggle-button");
+                        button.onclick = () => {
+                            displayCFcategory(category[1]);
+                            toggleButtons(button.id, "leftContent");
+                        }
 
                         wrapper.appendChild(button);
                         menu.appendChild(wrapper);
@@ -244,24 +435,27 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
-                    Object.entries(data).forEach(([code, detailList]) => {
-                    const label = detailList;
+                    sortCodes(Object.keys(data)).forEach(code => {
+                        const detailList = data[code];
+                        const label = detailList;
 
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "taxonomy-entry";
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
 
-                    const checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.value = label;
-                    checkbox.id = `cb-${code}`;
+                        const checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.value = label;
+                        checkbox.id = `cb-${code}`;
+                        checkbox.checked = document.getElementById("mainTextBox").value.includes("/ " + code)
+                        checkbox.onchange = () => addRemoveCode(code, "CF", checkbox.checked);
 
-                    const checkboxLabel = document.createElement("label");
-                    checkboxLabel.htmlFor = checkbox.id;
-                    checkboxLabel.innerHTML = `${code}: ${label}`;
+                        const checkboxLabel = document.createElement("label");
+                        checkboxLabel.htmlFor = checkbox.id;
+                        checkboxLabel.innerHTML = `<strong>${code}</strong>: ${label}`;
 
-                    wrapper.appendChild(checkbox);
-                    wrapper.appendChild(checkboxLabel);
-                    menu.appendChild(wrapper);
+                        wrapper.appendChild(checkbox);
+                        wrapper.appendChild(checkboxLabel);
+                        menu.appendChild(wrapper);
                     });
                 })
                 .catch(err => {
@@ -270,15 +464,32 @@ TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative 
                 });
         }
 
+        function updateMenuButtonStatus() {
+            const tbString = document.getElementById("mainTextBox").value;
+
+            const sections = {
+                SL: ["(Severity Level)", "SLBtn"],
+                PC: ["(Pathway Codes)", "PCBtn"],
+                MoD: ["(Method of Detection)", "MoDBtn"],
+                CF: ["(Causative Factors)", "CFBtn"]
+            };
+
+            Object.entries(sections).forEach(([key, [placeholder, btnID]]) => {
+                const btn = document.getElementById(btnID);
+                if (!tbString.includes(placeholder)) {
+                    btn.classList.add("menu-button-complete");
+                } else {
+                    btn.classList.remove("menu-button-complete");
+                }
+            });
+        }
+
         function clearText() {
             document.getElementById("mainTextBox").value =
                 "TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)";
             document.getElementById("taxonomyMenuSingle").style.display = 'none';
             document.getElementById("taxonomyMenu").style.display = 'none';
-            document.getElementById("SLBtn").style.backgroundColor = "white";
-            document.getElementById("PCBtn").style.backgroundColor = "white";
-            document.getElementById("MoDBtn").style.backgroundColor = "white";
-            document.getElementById("CFBtn").style.backgroundColor = "white";
+            toggleMenuButtons("ClearBtn");
         }
     </script>
 </body>
