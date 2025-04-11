@@ -1,9 +1,11 @@
 html, body {
     height: 100%;
     margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    font-family: sans-serif;
 }
 
 /* ──────────────── TOP SECTION ──────────────── */
@@ -15,8 +17,6 @@ html, body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 100;
     width: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 .button-container {
@@ -37,7 +37,7 @@ html, body {
     width: 100%;
     box-sizing: border-box;
     font-size: 1rem;
-    padding: 10px;
+    /*padding: 10px;*/
     resize: none;
 }
 
@@ -50,14 +50,17 @@ html, body {
 .button-row button {
     flex: 1;
     white-space: nowrap;
-    padding: 8px 12px;
+    /*padding: 8px 12px;*/
     font-weight: bold;
     cursor: pointer;
     background-color: white;
 }
 
 button.selected-button {
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 1);
+    box-shadow: none;              /* Remove the shadow */
+    border: 3px solid #000 !important;       /* Thicker, darker border */
+    background-color: #ccc;       /* Or #aaa, something darker */
+    color: #000; 
 }
 
 .menu-button-complete {
@@ -76,17 +79,21 @@ button.selected-button {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0;
+    padding-top: 5px;
 }
 
 .menu-container {
     flex: 1;
     display: flex;
+    min-height: 0;
     overflow: hidden;
 }
 
 .left-bar, .right-content {
-    height: 100%;
+    box-sizing: border-box;
     overflow-y: auto;
+    height: 100%;
 }
 
 .left-bar {
@@ -98,14 +105,18 @@ button.selected-button {
 .left-bar button {
     width: 100%;
     background-color: #fff;
-    margin-bottom: 10px;
-    margin-right: 10px;
+    padding: 5px;
     text-align: left;
-    border: 1px solid #000;
 }
 
 .right-content {
     width: 70%;
+    box-sizing: border-box;
+}
+
+#rightContent .taxonomy-entry button {
+    flex: 0 0 60px;
+    margin-left: 5px;
     box-sizing: border-box;
 }
 
@@ -118,13 +129,13 @@ button.selected-button {
 
 .taxonomy-entry {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 10px;
     margin-bottom: 10px;
 }
 
 .taxonomy-entry button {
-    padding: 6px 10px;
+    padding-right: 6px;
     background-color: #fff;
     border: 1px solid #000000;
     font-weight: bold;
@@ -133,4 +144,12 @@ button.selected-button {
 
 .taxonomy-entry .description {
     max-width: 800px;
+}
+
+#taxonomyMenu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
 }

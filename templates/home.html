@@ -1,0 +1,47 @@
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TSRT9 Error Code Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        html, body {
+            overflow: auto !important;
+        }
+        iframe {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TSRT9 Error Code Generator</h1>
+        <p>This tool helps construct TSRT9-style error codes using taxonomy-driven dropdowns and selectors.</p>
+        {% if initialCode %}
+            <iframe id="widgetIframe" src="/widget/TSRT9/{{ initialCode|urlencode }}"></iframe>
+        {% else %}
+            <iframe id="widgetIframe" src="/widget"></iframe>
+        {% endif %}
+        <button onclick="requestValueFromWidget()">Copy</button>
+        <h4>Embed this widget in your own system:</h4>
+        <code>&lt;iframe src="http://yourdomain.com/widget" width="100%" height="750"&gt;&lt;/iframe&gt;</code>
+    </div>
+    <script>
+        function requestValueFromWidget() {
+            const iframe = document.getElementById("widgetIframe");
+            // Send a message to the widget requesting its value
+            iframe.contentWindow.postMessage({ action: "getValue" }, "*");
+        }
+        
+        window.addEventListener("message", function(event) {
+            // Validate event.origin here in a production app for security.
+            if (event.data && event.data.action === "sendValue") {
+                navigator.clipboard.writeText(event.data.value);
+            }
+        });
+      </script>
+</body>
+</html>

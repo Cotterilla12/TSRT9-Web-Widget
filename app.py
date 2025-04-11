@@ -46,11 +46,6 @@ severityLevels = LoadData("Severity Levels.csv")
 
 app = Flask(__name__)
 
-@app.route("/widget")
-def widget():
-    message = "Welcome to the Department Widget!"
-    return render_template("widget.html")
-
 @app.route("/api/severity")
 def api_severity():
     return jsonify(severityLevels)
@@ -72,9 +67,25 @@ def api_causative(category):
         return jsonify(sorted(list(causativeFactors.keys()), key = lambda x: int(x.split(":")[0])))
     return jsonify(causativeFactors[category])
 
+@app.route("/TSRT9/<path:code>")
+@app.route("/TSRT9")
 @app.route("/")
-def home():
-    return redirect(url_for("widget"))
+def home(code = ""):
+    code = code.replace(" ", "")
+    return render_template("home.html", initialCode = code)
+
+@app.route("/widget/TSRT9/<path:code>")
+@app.route("/widget/TSRT9")
+@app.route("/widget")
+def widget(code = ""):
+    code = code.replace(" ", "")
+    return render_template("widget.html", initialCode = code)
+
+@app.route("/widget/<taxonomy>/TSRT9/<path:code>")
+@app.route("/widget/<taxonomy>")
+def widgetSingle(taxonomy, code = ""):
+    code = code.replace(" ", "")
+    return render_template("widget.html", singleTaxonomy=taxonomy, initialCode=code)
 
 if __name__ == "__main__":
     app.run(debug=True)

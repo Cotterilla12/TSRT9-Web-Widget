@@ -8,16 +8,23 @@
 <body>
     <div class="top-container">
         <div class="textbox-wrapper">
-            <textarea id="mainTextBox" readonly>TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)</textarea>
+            {% if initialCode %}
+                <textarea id="mainTextBox" readonly>{{initialCode}}</textarea>
+            {% else %}
+                <textarea id="mainTextBox" readonly>TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)</textarea>
+            {% endif %}
         </div>
     </div>
     
     <div class="button-container">
         <div class="button-row">
-            <button id="SLBtn" onclick="showSeverityOptions()">Severity Level</button>
-            <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
-            <button id="MoDBtn" onclick="showMoDOptions()">Method of Detection</button>
-            <button id="CFBtn" onclick="showCFOptions()">Causative Factors</button>
+            {% if not singleTaxonomy %}
+                <button id="SLBtn" onclick="showSLOptions()">Severity Level</button>
+                <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
+                <button id="MDBtn" onclick="showMDOptions()">Method of Detection</button>
+                <button id="CFBtn" onclick="showCFOptions()">Causative Factors</button>
+            {% endif %}
+            
             <button id="ClearBtn" onclick="clearText()">Clear</button>
         </div>
     </div>
@@ -35,7 +42,7 @@
     </div>
 
     <script>
-        function showSeverityOptions() {
+        function showSLOptions() {
             document.getElementById("taxonomyMenu").style.display = 'none';
             const menu = document.getElementById("taxonomyMenuSingle");
             menu.innerHTML = 'Loading Severity Levels';
@@ -119,7 +126,7 @@
             document.getElementById("rightContent").innerHTML = '';
             const menu = document.getElementById("leftContent");
             menu.innerHTML = 'Loading Pathway Code Categories';
-            document.getElementById("taxonomyMenu").style.display = 'block';
+            document.getElementById("taxonomyMenu").style.display = 'flex';
             toggleMenuButtons("PCBtn");
 
             fetch("/api/pathwaycodes")
@@ -196,43 +203,57 @@
             let placeholder = "";
             if (taxonomy == "PC"){
                 placeholder = "(Pathway Codes)";
-            } else if (taxonomy == "MoD"){
+            } else if (taxonomy == "MD"){
                 placeholder = "(Method of Detection)";
             } else if (taxonomy == "CF"){
                 placeholder = "(Causative Factors)";
             }
             
-            let MoDPoint = -1
+            if ("{{ singleTaxonomy|default('') }}".trim() != ""){
+                let prefix = "";
+                if (taxonomy == "MD"){
+                    prefix = "MD";
+                }
+
+                if (tb.value == placeholder){
+                    tb.value = prefix + code;
+                } else {
+                    tb.value = sortCodes(tbList.concat(prefix + code)).join(" / ");
+                }
+                return;
+            }
+
+            let MDPoint = -1
             for (let i = 3; i < tbList.length; i++){
                 if (tbList[i].includes("MD") || tbList[i].includes("(Method of Detection)")){
-                    MoDPoint = i;
+                    MDPoint = i;
                     break;
                 }
             }
 
             let levelTax = tbList.slice(0, 2);
-            let PCTax = tbList.slice(2, MoDPoint);
-            let MoDTax = tbList[MoDPoint];
-            let CFTax = tbList.slice(MoDPoint + 1);
+            let PCTax = tbList.slice(2, MDPoint);
+            let MDTax = tbList[MDPoint];
+            let CFTax = tbList.slice(MDPoint + 1);
 
             let taxonomyToEdit = [];
             if (taxonomy == "PC"){
                 taxonomyToEdit = PCTax;
-            } else if (taxonomy == "MoD"){
-                taxonomyToEdit = MoDTax;
+            } else if (taxonomy == "MD"){
+                taxonomyToEdit = MDTax;
             } else if (taxonomy == "CF"){
                 taxonomyToEdit = CFTax;
             }
 
-            if (taxonomyToEdit.length == 1 && taxonomyToEdit[0] == placeholder && taxonomy != "MoD"){
+            if (taxonomyToEdit.length == 1 && taxonomyToEdit[0] == placeholder && taxonomy != "MD"){
                 taxonomyToEdit = [];
             }
 
-            if(addBool && taxonomy != "MoD"){
+            if(addBool && taxonomy != "MD"){
                 if (!taxonomyToEdit.includes(code)){
                     taxonomyToEdit = sortCodes(taxonomyToEdit.concat(code));
                 }
-            } else if (addBool && taxonomy == "MoD"){
+            } else if (addBool && taxonomy == "MD"){
                 taxonomyToEdit = "MD" + code;
             } else {
                 const index = taxonomyToEdit.indexOf(code);
@@ -246,11 +267,11 @@
 
             let fullTaxonomy = []
             if (taxonomy == "PC"){
-                fullTaxonomy = levelTax.concat(sortCodes(taxonomyToEdit), MoDTax, sortCodes(CFTax));
-            } else if (taxonomy == "MoD"){
+                fullTaxonomy = levelTax.concat(sortCodes(taxonomyToEdit), MDTax, sortCodes(CFTax));
+            } else if (taxonomy == "MD"){
                 fullTaxonomy = levelTax.concat(sortCodes(PCTax), taxonomyToEdit, sortCodes(CFTax));
             } else if (taxonomy == "CF"){
-                fullTaxonomy = levelTax.concat(sortCodes(PCTax), MoDTax, sortCodes(taxonomyToEdit));
+                fullTaxonomy = levelTax.concat(sortCodes(PCTax), MDTax, sortCodes(taxonomyToEdit));
             }
 
             tb.value = fullTaxonomy.join(" / ")
@@ -312,14 +333,14 @@
             return splitCodes.map(parts => prefix + parts[1] + parts[2]);
         }
 
-        function showMoDOptions() {
+        function showMDOptions() {
             document.getElementById("taxonomyMenuSingle").style.display = 'none';
             document.getElementById("leftContent").innerHTML = '';
             document.getElementById("rightContent").innerHTML = '';
             const menu = document.getElementById("leftContent");
             menu.innerHTML = 'Loading Method of Detection Categories';
-            document.getElementById("taxonomyMenu").style.display = 'block';
-            toggleMenuButtons("MoDBtn");
+            document.getElementById("taxonomyMenu").style.display = 'flex';
+            toggleMenuButtons("MDBtn");
 
             fetch("/api/pathwaycodes")
                 .then(res => res.json())
@@ -331,10 +352,10 @@
 
                         const button = document.createElement("button");
                         button.textContent = category[1];
-                        button.id = "btnMoDCategory" + category[1].replace(/\s+/g, "");
+                        button.id = "btnMDCategory" + category[1].replace(/\s+/g, "");
                         button.classList.add("toggle-button");
                         button.onclick = () => {
-                            displayMoDcategory(category[1]);
+                            displayMDcategory(category[1]);
                             toggleButtons(button.id, "leftContent");
                         }
 
@@ -348,7 +369,7 @@
                 });
         }
 
-        function displayMoDcategory(category){
+        function displayMDcategory(category){
             const menu = document.getElementById("rightContent");
             menu.innerHTML = 'Loading Methods of Detection';
 
@@ -369,7 +390,7 @@
                         button.classList.add("toggle-button");
                         button.id = "btn" + code;
                         button.onclick = () => {
-                            addRemoveCode(code, "MoD", true);
+                            addRemoveCode(code, "MD", true);
                             toggleButtons(button.id, "rightContent");
                         }
 
@@ -397,7 +418,7 @@
             document.getElementById("rightContent").innerHTML = '';
             const menu = document.getElementById("leftContent");
             menu.innerHTML = 'Loading Causative Factor Categories';
-            document.getElementById("taxonomyMenu").style.display = 'block';
+            document.getElementById("taxonomyMenu").style.display = 'flex';
             toggleMenuButtons("CFBtn");
 
             fetch("/api/causativefactors")
@@ -470,7 +491,7 @@
             const sections = {
                 SL: ["(Severity Level)", "SLBtn"],
                 PC: ["(Pathway Codes)", "PCBtn"],
-                MoD: ["(Method of Detection)", "MoDBtn"],
+                MD: ["(Method of Detection)", "MDBtn"],
                 CF: ["(Causative Factors)", "CFBtn"]
             };
 
@@ -485,12 +506,74 @@
         }
 
         function clearText() {
-            document.getElementById("mainTextBox").value =
-                "TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)";
-            document.getElementById("taxonomyMenuSingle").style.display = 'none';
-            document.getElementById("taxonomyMenu").style.display = 'none';
-            toggleMenuButtons("ClearBtn");
+            let taxonomy = "{{ singleTaxonomy|default('') }}".toUpperCase();
+
+            if (taxonomy == ""){
+                document.getElementById("mainTextBox").value =
+                    "TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)";
+                    toggleMenuButtons("ClearBtn");
+                return;
+            }
+
+            let taxSL = "{{ SLTaxonomy|default('(Severity Level)') }}";
+            let taxPC = "{{ PCTaxonomy|default('(Pathway Codes)') }}";
+            let taxMD = "{{ MDTaxonomy|default('(Method of Detection)') }}";
+            let taxCF = "{{ SLTaxonomy|default('(Causative Factors)') }}";
+
+            if (taxonomy == "SL"){
+                document.getElementById("mainTextBox").value = taxSL.trim();
+            } else if (taxonomy == "PC"){
+                document.getElementById("mainTextBox").value = taxPC.trim();
+            } else if (taxonomy == "MD"){
+                document.getElementById("mainTextBox").value = taxMD.trim();
+            } else if (taxonomy == "CF"){
+                document.getElementById("mainTextBox").value = taxCF.trim();
+            }
         }
+
+        window.addEventListener("message", function(event) {
+            // Optionally, validate event.origin here.
+            if (event.data && event.data.action === "getValue") {
+                const value = document.getElementById("mainTextBox").value;
+                window.parent.postMessage({ action: "sendValue", value: value }, "*");
+            }
+        });
+
+        function sanitizeText(text, taxonomy = "") {
+            let taxSL = "{{ SLTaxonomy|default('(Severity Level)') }}";
+            let taxPC = "{{ PCTaxonomy|default('(Pathway Codes)') }}";
+            let taxMD = "{{ MDTaxonomy|default('(Method of Detection)') }}";
+            let taxCF = "{{ SLTaxonomy|default('(Causative Factors)') }}";
+
+            if (taxonomy == "SL"){
+                return taxSL.trim();
+            } else if (taxonomy == "PC"){
+                return taxPC.trim();
+            } else if (taxonomy == "MD"){
+                return taxMD.trim();
+            } else if (taxonomy == "CF"){
+                return taxCF.trim();
+            } else{
+                return ["TSRT9",  taxSL.trim(), taxPC.trim(), taxMD.trim(), taxCF.trim()].join(" / ");
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", function() {
+            // Get the textarea element.
+            const textarea = document.getElementById("mainTextBox");
+            // Sanitize its current content.
+            textarea.value = sanitizeText(textarea.value, "{{ singleTaxonomy|default('') }}".toUpperCase());
+
+            var singleTax = "{{ singleTaxonomy|default('') }}".toUpperCase();
+            if(singleTax) {
+                var funcName = "show" + singleTax + "Options";
+                if (typeof window[funcName] === "function") {
+                    window[funcName]();
+                } else {
+                    console.log("Function " + funcName + " not found.");
+                }
+            }
+        });
     </script>
 </body>
 </html>
