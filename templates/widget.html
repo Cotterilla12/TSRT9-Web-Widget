@@ -312,6 +312,10 @@
 
 
         function sortCodes(codes){
+            if (codes.length == 0){
+                return [];
+            }
+
             const example = codes[0];
 
             let prefix = "";
@@ -535,10 +539,10 @@
             toggleButtons("", "leftContent");
             toggleButtons("", "taxonomyMenuSingle");
             
-            let taxSL = {{ SLTaxonomy|default([])|tojson }};
-            let taxPC = {{ PCTaxonomy|default([])|tojson }};
-            let taxMD = {{ MDTaxonomy|default([])|tojson }};
-            let taxCF = {{ CFTaxonomy|default([])|tojson }};
+            let taxSL = sortCodes({{ SLTaxonomy|default([])|tojson }});
+            let taxPC = sortCodes({{ PCTaxonomy|default([])|tojson }});
+            let taxMD = sortCodes({{ MDTaxonomy|default([])|tojson }});
+            let taxCF = sortCodes({{ CFTaxonomy|default([])|tojson }});
             
             if (taxonomy == "SL") {
                 document.getElementById("mainTextBox").value =

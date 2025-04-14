@@ -96,6 +96,11 @@
         <h2>Embedding with Existing Error Code</h2>
         <p>Embed the widget preloaded with an existing TSRT9 error code (Example: TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e):</p>
         <p><strong>Note:</strong> It does not matter whether it is loaded as "TSRT9/*" or "TSRT9 /*", as well as there being spaces between the codes as these are all stripped as part of identification. In this scenario, pressing "Clear" will reset the interface to the submitted code rather than to an empty state. The user can still edit the result, but each entry will need to be manually removed.</p>
+        <h3>Code Sanitisation:</h3>
+        <p>When embedding with existing error codes, the widget sanitises each entered code, ensuring it matches a known taxonomy code exactly. Non-matching codes, as well as ones from the wrong taxonomies, will simply be ignored. Duplicate entries of the same code are accepted but only appear once. If multiple different SL or MD codes are submitted, neither will be shown.</p>
+        <p><strong>Note:</strong> For 'Severity Level' (SL) and 'Method of Detection' (MD), only one selection is allowed regardless of widget load.</p>
+        <h3>Sanitisation Examples:</h3>
+        <p><strong>Example 1:</strong> A completely valid error code.</p>
         <code>
 &lt;iframe 
     src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e" 
@@ -104,8 +109,7 @@
         </code>
         <iframe src="/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e" width="90%" height="400"></iframe>
 
-        <h3>Sanitisation Examples:</h3>
-        <p><strong>Example 1:</strong> A scenario where the code includes valid entries, an invalid code, and duplicated SL and MD entries. Duplicates are fine as long as they are the same value, and will only be included once in the final string. If multiple different SL or MD values are submitted, none will be used.</p>
+        <p><strong>Example 2:</strong> A scenario where the code includes valid entries, an invalid code, and duplicated SL and MD entries. Duplicates are fine as long as they are the same value, and will only be included once in the final string. If multiple different SL or MD values are submitted, none will be used.</p>
         <code>
 &lt;iframe 
     src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / junk / Level 1 / 0a / MD0a / CF404 / CF 1a / Level 1 / MD0a" 
@@ -114,7 +118,7 @@
         </code>
         <iframe src="/widget/TSRT9 / junk / Level 1 / 0a / MD0a / CF404 / CF 1a / Level 1 / MD0a" width="90%" height="400"></iframe>
 
-        <p><strong>Example 2:</strong> A scenario with one valid SL, two different MD codes, a valid PC and CF, and some junk. Since MD only allows one selection, both MD values are ignored. The rest of the valid codes are included. Junk is ignored.</p>
+        <p><strong>Example 3:</strong> A scenario with one valid SL, two different MD codes, a valid PC and CF, and some junk. Since MD only allows one selection, both MD values are ignored. The rest of the valid codes are included. Junk is ignored.</p>
         <code>
 &lt;iframe 
     src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / Level 1 / 0a / MD0a / MD0b / CF 1a / nonsense123" 
@@ -123,10 +127,23 @@
         </code>
         <iframe id="widgetIframePC" src="/widget/TSRT9 / Level 1 / 0a / MD0a / MD0b / CF 1a / nonsense123" width="90%" height="400"></iframe>
 
-        <p><strong>Note:</strong> For 'Severity Level' (SL) and 'Method of Detection' (MD), only one selection is allowed regardless of widget load.</p>
-
-        <h3>Code Sanitisation:</h3>
-        <p>When embedding with existing error codes, the widget sanitises each entered code, ensuring it matches a known taxonomy code exactly. Non-matching codes, as well as ones from the wrong taxonomies, will simply be ignored. Duplicate entries of the same code are accepted but only appear once. If multiple different SL or MD codes are submitted, neither will be shown.</p>
+        <p><strong>Example 4:</strong> A scenario with a single taxonomy selected, pathway codes (PC) in this case, and a full error code presented with some junk added. Only the relevant codes will appear.</p>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/PC/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe id="widgetIframePC" src="/widget/PC/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" width="90%" height="400"></iframe>
+        
+        <p><strong>Example 5:</strong> Due to overzealous matching, the code can be completely shuffled and mangled with spaces. All of the codes will appear in the right order.</p>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / CF 5e / 1 d / CF3 b  / 0a / CF 5b / 9g / CF 1 a / 9i / Level1 / 1b / 9d / C F 5d / 16 f / M D 7c / CF3c / CF 3a / 16d" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe id="widgetIframePC" src="/widget/TSRT9 / CF 5e / 1 d / CF3 b  / 0a / CF 5b / 9g / CF 1 a / 9i / Level1 / 1b / 9d / C F 5d / 16 f / M D 7c / CF3c / CF 3a / 16d" width="90%" height="400"></iframe>
 
         <h2>Retrieving Values from the Widget</h2>
         <p>Retrieve widget values using JavaScript:</p>
@@ -150,6 +167,11 @@ window.addEventListener("message", function(event) {
         <p>The button below demonstrates retrieving a TSRT9 code from the final embedded widget above:</p>
 
         <button class="copy-button" onclick="requestValueFromWidget('widgetIframePC')">Copy Code</button>
+
+        <p>Thank you for taking the time to review this widget documentation.<br>
+            If you have suggestions for improvements, corrections, or would like to contribute enhancements,<br>
+            please find me at:<br>
+            <a href="https://github.com/Cotterilla12/TSRT9-Web-Widget" target="_blank">github.com/Cotterilla12/TSRT9-Web-Widget</a></p>
 
         <button onclick="window.location.href='{{ url_for('home') }}';">Return Home</button>
     </div>
