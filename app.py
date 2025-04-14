@@ -40,6 +40,72 @@ def LoadData(filename):
     # Return the dict
     return data
 
+def ReturnAllCodes(taxonomy):
+    if (taxonomy == "SL"):
+        return list(severityLevels.keys())
+    elif (taxonomy == "PC"):
+        codes = []
+        for category in pathwayCodes.keys():
+            codes += list(pathwayCodes[category].keys())
+        return codes
+    elif (taxonomy == "MD"):
+        codes = []
+        for category in pathwayCodes.keys():
+            codes += list(pathwayCodes[category].keys())
+        for index in range(len(codes)):
+            codes[index] = "MD" + codes[index]
+        return codes
+    elif (taxonomy == "CF"):
+        codes = []
+        for category in causativeFactors.keys():
+            codes += list(causativeFactors[category].keys())
+        return codes
+
+def SanatiseCodes(codes):
+    allSeverityLevels = ReturnAllCodes("SL")
+    allPathwayCodes = ReturnAllCodes("PC")
+    allMethodsOfDetection = ReturnAllCodes("MD")
+    allCausitiveFactors = ReturnAllCodes("CF")
+
+    SL = []
+    PCs = []
+    MD = []
+    CFs = []
+
+    for code in codes.replace(" ", "").split("/"):
+        lower_code = code.lower()  # Convert the user input code to lower case
+        matchingSL = next((original for original in allSeverityLevels
+                           if original.replace(" ", "").lower() == lower_code.replace(" ", "")), None)
+        matchingPC = next((original for original in allPathwayCodes
+                           if original.replace(" ", "").lower() == lower_code), None)
+        matchingMD = next((original for original in allMethodsOfDetection
+                           if original.replace(" ", "").lower() == lower_code), None)
+        matchingCF = next((original for original in allCausitiveFactors
+                           if original.replace(" ", "").lower() == lower_code.replace(" ", "")), None)
+        
+        if matchingSL is not None:
+            SL.append(matchingSL)
+        elif matchingPC is not None:
+            PCs.append(matchingPC)
+        elif matchingMD is not None:
+            MD.append(matchingMD)
+        elif matchingCF is not None:
+            CFs.append(matchingCF)
+    
+     # Remove duplicates
+    SL = list(set(SL))
+    PCs = list(set(PCs))
+    MD = list(set(MD))
+    CFs = list(set(CFs))
+
+    if len(SL) > 1:
+        SL = []
+    if len(MD) > 1:
+        MD = []
+    
+    return SL, PCs, MD, CFs
+
+
 pathwayCodes = LoadData("Pathway Codes.csv")
 causativeFactors = LoadData("Causative Factors.csv")
 severityLevels = LoadData("Severity Levels.csv")
@@ -68,24 +134,35 @@ def api_causative(category):
     return jsonify(causativeFactors[category])
 
 @app.route("/TSRT9/<path:code>")
-@app.route("/TSRT9")
+@app.route("/TSRT9 /<path:code>")
 @app.route("/")
 def home(code = ""):
     code = code.replace(" ", "")
     return render_template("home.html", initialCode = code)
 
 @app.route("/widget/TSRT9/<path:code>")
-@app.route("/widget/TSRT9")
+@app.route("/widget/TSRT9 /<path:code>")
 @app.route("/widget")
 def widget(code = ""):
     code = code.replace(" ", "")
-    return render_template("widget.html", initialCode = code)
+    SL, PC, MD, CF = SanatiseCodes(code)
+    return render_template("widget.html",
+                       SLTaxonomy=SL, PCTaxonomy=PC, MDTaxonomy=MD, CFTaxonomy=CF)
 
 @app.route("/widget/<taxonomy>/TSRT9/<path:code>")
+@app.route("/widget/<taxonomy>/TSRT9 /<path:code>")
 @app.route("/widget/<taxonomy>")
-def widgetSingle(taxonomy, code = ""):
+def widgetSingle(taxonomy, code=""):
     code = code.replace(" ", "")
-    return render_template("widget.html", singleTaxonomy=taxonomy, initialCode=code)
+    SL, PC, MD, CF = SanatiseCodes(code)
+    return render_template("widget.html", singleTaxonomy=taxonomy,
+                           SLTaxonomy=SL, PCTaxonomy=PC, MDTaxonomy=MD, CFTaxonomy=CF)
+
+@app.route("/webdeveloperinformation")
+def web_developer_information():
+    return render_template("webdeveloperinformation.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, debug=True)

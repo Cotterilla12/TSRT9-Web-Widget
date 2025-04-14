@@ -8,11 +8,7 @@
 <body>
     <div class="top-container">
         <div class="textbox-wrapper">
-            {% if initialCode %}
-                <textarea id="mainTextBox" readonly>{{initialCode}}</textarea>
-            {% else %}
-                <textarea id="mainTextBox" readonly>TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)</textarea>
-            {% endif %}
+            <textarea id="mainTextBox" readonly></textarea>
         </div>
     </div>
     
@@ -47,7 +43,9 @@
             const menu = document.getElementById("taxonomyMenuSingle");
             menu.innerHTML = 'Loading Severity Levels';
             menu.style.display = 'block';
-            toggleMenuButtons("SLBtn");
+            if ("{{ singleTaxonomy|default('') }}".trim() === "") {
+                toggleMenuButtons("SLBtn");
+            };
 
             fetch("/api/severity")
                 .then(res => res.json())
@@ -87,10 +85,6 @@
                 });
         }
 
-        function checkComplete(){
-            updateMenuButtonStatus();
-        }
-
         function copyToClipboard(){
             const tbString = document.getElementById("mainTextBox").value;
             navigator.clipboard.writeText(tbString);
@@ -106,7 +100,9 @@
                 button.classList.remove("selected-button");
             });
 
-            btnOfInterest.classList.add("selected-button");
+            if (btnOfInterest){
+                btnOfInterest.classList.add("selected-button");
+            }
         }
 
         function insertSeverity(level) {
@@ -117,7 +113,7 @@
             else {
                 tb.value = tb.value.replace(/Level\s*\d+/, level);
             }
-            checkComplete();
+            updateMenuButtonStatus();
         }
 
         function showPCOptions() {
@@ -177,6 +173,9 @@
                         checkbox.value = label;
                         checkbox.id = `cb-${code}`;
                         checkbox.checked = document.getElementById("mainTextBox").value.includes("/ " + code + " /");
+                        if ("{{ singleTaxonomy|default('') }}".trim() != ""){
+                            checkbox.checked = document.getElementById("mainTextBox").value.includes(code);
+                        }
                         checkbox.onchange = () => addRemoveCode(code, "PC", checkbox.checked);
 
                         const checkboxLabel = document.createElement("label");
@@ -196,12 +195,13 @@
         }
 
         function addRemoveCode(code, taxonomy, addBool) {
-            tb = document.getElementById("mainTextBox");
-            tbString = tb.value;
-            tbList = tbString.split(" / ");
+            const tb = document.getElementById("mainTextBox");
+            let tbList = tb.value.split(" / ");
 
             let placeholder = "";
-            if (taxonomy == "PC"){
+            if (taxonomy == "SL"){
+                placeholder = "(Severity Level)";
+            } else if (taxonomy == "PC"){
                 placeholder = "(Pathway Codes)";
             } else if (taxonomy == "MD"){
                 placeholder = "(Method of Detection)";
@@ -210,16 +210,31 @@
             }
             
             if ("{{ singleTaxonomy|default('') }}".trim() != ""){
-                let prefix = "";
                 if (taxonomy == "MD"){
-                    prefix = "MD";
+                    tb.value = "MD" + code;
+                    return;
                 }
 
-                if (tb.value == placeholder){
-                    tb.value = prefix + code;
+                if (addBool){
+                    if (tb.value == placeholder){
+                        tb.value = code;
+                    } else {
+                        tb.value = sortCodes(tbList.concat(code)).join(" / ");
+                    } 
                 } else {
-                    tb.value = sortCodes(tbList.concat(prefix + code)).join(" / ");
+                    const index = tbList.indexOf(code);
+                    if(index != -1){
+                        tbList.splice(index, 1);
+                    }
+
+                    if (tbList.length != 0){
+                        tb.value = tbList.join(" / ");
+                    } else {
+                        tb.value = placeholder;
+                    }
                 }
+
+                updateMenuButtonStatus();
                 return;
             }
 
@@ -275,7 +290,7 @@
             }
 
             tb.value = fullTaxonomy.join(" / ")
-            checkComplete();
+            updateMenuButtonStatus();
         }
 
         function isNumeric(n) {
@@ -468,6 +483,9 @@
                         checkbox.value = label;
                         checkbox.id = `cb-${code}`;
                         checkbox.checked = document.getElementById("mainTextBox").value.includes("/ " + code)
+                        if ("{{ singleTaxonomy|default('') }}".trim() != ""){
+                            checkbox.checked = document.getElementById("mainTextBox").value.includes(code);
+                        }
                         checkbox.onchange = () => addRemoveCode(code, "CF", checkbox.checked);
 
                         const checkboxLabel = document.createElement("label");
@@ -495,8 +513,11 @@
                 CF: ["(Causative Factors)", "CFBtn"]
             };
 
-            Object.entries(sections).forEach(([key, [placeholder, btnID]]) => {
+            Object.entries(sections).forEach(([taxonomy, [placeholder, btnID]]) => {
                 const btn = document.getElementById(btnID);
+                // Only try to update the button if it actually exists
+                if (!btn) return;
+
                 if (!tbString.includes(placeholder)) {
                     btn.classList.add("menu-button-complete");
                 } else {
@@ -507,28 +528,43 @@
 
         function clearText() {
             let taxonomy = "{{ singleTaxonomy|default('') }}".toUpperCase();
-
+            document.getElementById("rightContent").innerHTML = "";
             if (taxonomy == ""){
+                toggleMenuButtons("ClearBtn");
+            }
+            toggleButtons("", "leftContent");
+            toggleButtons("", "taxonomyMenuSingle");
+            
+            let taxSL = {{ SLTaxonomy|default([])|tojson }};
+            let taxPC = {{ PCTaxonomy|default([])|tojson }};
+            let taxMD = {{ MDTaxonomy|default([])|tojson }};
+            let taxCF = {{ CFTaxonomy|default([])|tojson }};
+            
+            if (taxonomy == "SL") {
                 document.getElementById("mainTextBox").value =
-                    "TSRT9 / (Severity Level) / (Pathway Codes) / (Method of Detection) / (Causative Factors)";
-                    toggleMenuButtons("ClearBtn");
-                return;
+                    (taxSL.length ? taxSL[0] : "(Severity Level)");
+                showSLOptions()
+            } else if (taxonomy == "PC") {
+                document.getElementById("mainTextBox").value =
+                    (taxPC.length ? taxPC.join(" / ") : "(Pathway Codes)");
+            } else if (taxonomy == "MD") {
+                document.getElementById("mainTextBox").value =
+                    (taxMD.length ? taxMD[0] : "(Method of Detection)");
+            } else if (taxonomy == "CF") {
+                document.getElementById("mainTextBox").value =
+                    (taxCF.length ? taxCF.join(" / ") : "(Causative Factors)");
+            }
+            
+            if (taxonomy == "") {
+                let finalText = "TSRT9";
+                finalText += " / " + (taxSL.length ? taxSL.join(" / ") : "(Severity Level)");
+                finalText += " / " + (taxPC.length ? taxPC.join(" / ") : "(Pathway Codes)");
+                finalText += " / " + (taxMD.length ? taxMD.join(" / ") : "(Method of Detection)");
+                finalText += " / " + (taxCF.length ? taxCF.join(" / ") : "(Causative Factors)");
+                document.getElementById("mainTextBox").value = finalText;
             }
 
-            let taxSL = "{{ SLTaxonomy|default('(Severity Level)') }}";
-            let taxPC = "{{ PCTaxonomy|default('(Pathway Codes)') }}";
-            let taxMD = "{{ MDTaxonomy|default('(Method of Detection)') }}";
-            let taxCF = "{{ SLTaxonomy|default('(Causative Factors)') }}";
-
-            if (taxonomy == "SL"){
-                document.getElementById("mainTextBox").value = taxSL.trim();
-            } else if (taxonomy == "PC"){
-                document.getElementById("mainTextBox").value = taxPC.trim();
-            } else if (taxonomy == "MD"){
-                document.getElementById("mainTextBox").value = taxMD.trim();
-            } else if (taxonomy == "CF"){
-                document.getElementById("mainTextBox").value = taxCF.trim();
-            }
+            updateMenuButtonStatus();
         }
 
         window.addEventListener("message", function(event) {
@@ -539,33 +575,13 @@
             }
         });
 
-        function sanitizeText(text, taxonomy = "") {
-            let taxSL = "{{ SLTaxonomy|default('(Severity Level)') }}";
-            let taxPC = "{{ PCTaxonomy|default('(Pathway Codes)') }}";
-            let taxMD = "{{ MDTaxonomy|default('(Method of Detection)') }}";
-            let taxCF = "{{ SLTaxonomy|default('(Causative Factors)') }}";
-
-            if (taxonomy == "SL"){
-                return taxSL.trim();
-            } else if (taxonomy == "PC"){
-                return taxPC.trim();
-            } else if (taxonomy == "MD"){
-                return taxMD.trim();
-            } else if (taxonomy == "CF"){
-                return taxCF.trim();
-            } else{
-                return ["TSRT9",  taxSL.trim(), taxPC.trim(), taxMD.trim(), taxCF.trim()].join(" / ");
-            }
-        }
-
         window.addEventListener("DOMContentLoaded", function() {
-            // Get the textarea element.
-            const textarea = document.getElementById("mainTextBox");
-            // Sanitize its current content.
-            textarea.value = sanitizeText(textarea.value, "{{ singleTaxonomy|default('') }}".toUpperCase());
+            // Directly call clearText to set the correct taxonomies
+            clearText();
+            toggleMenuButtons("");
 
             var singleTax = "{{ singleTaxonomy|default('') }}".toUpperCase();
-            if(singleTax) {
+            if (singleTax) {
                 var funcName = "show" + singleTax + "Options";
                 if (typeof window[funcName] === "function") {
                     window[funcName]();

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Widget Developer Information</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        html, body {
+            overflow-y: auto !important;
+        }
+
+        code {
+            background-color: #e6d6be;
+            padding: 5px;
+            display: block;
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+        }
+        .container {
+            padding: 20px;
+        }
+        iframe {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #000;
+        }
+        .copy-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 40px;
+            font-size: 1.2rem;
+            margin: 10px auto;
+            border: 2px solid #000;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Embedding the TSRT9 Widget</h1>
+
+        <button onclick="window.location.href='{{ url_for('home') }}';">Return Home</button>
+
+        <p>This tool was developed to simplify the generation of TSRT9 error codes by providing a guided, user-friendly interface. Users can select from predefined taxonomies, and the widget constructs a compliant error code. As users complete each section, the corresponding button in the interface turns green to visually indicate progress.</p>
+        
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+
+        <iframe src="/widget" width="90%" height="400"></iframe>
+
+        <h2>Embedding with Single Taxonomy</h2>
+        <p>Embed the widget displaying only one taxonomy by choosing one of the following:</p>
+        
+        <strong>Severity Level (SL):</strong>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/SL" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/SL" width="90%" height="400"></iframe>
+
+        <strong>Pathway Codes (PC):</strong>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/PC" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/PC" width="90%" height="400"></iframe>
+
+        <strong>Method of Detection (MD):</strong>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/MD" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/MD" width="90%" height="400"></iframe>
+
+        <strong>Causative Factors (CF):</strong>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/CF" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/CF" width="90%" height="400"></iframe>
+
+        <h2>Embedding with Existing Error Code</h2>
+        <p>Embed the widget preloaded with an existing TSRT9 error code (Example: TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e):</p>
+        <p><strong>Note:</strong> It does not matter whether it is loaded as "TSRT9/*" or "TSRT9 /*", as well as there being spaces between the codes as these are all stripped as part of identification. In this scenario, pressing "Clear" will reset the interface to the submitted code rather than to an empty state. The user can still edit the result, but each entry will need to be manually removed.</p>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e" width="90%" height="400"></iframe>
+
+        <h3>Sanitisation Examples:</h3>
+        <p><strong>Example 1:</strong> A scenario where the code includes valid entries, an invalid code, and duplicated SL and MD entries. Duplicates are fine as long as they are the same value, and will only be included once in the final string. If multiple different SL or MD values are submitted, none will be used.</p>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / junk / Level 1 / 0a / MD0a / CF404 / CF 1a / Level 1 / MD0a" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/TSRT9 / junk / Level 1 / 0a / MD0a / CF404 / CF 1a / Level 1 / MD0a" width="90%" height="400"></iframe>
+
+        <p><strong>Example 2:</strong> A scenario with one valid SL, two different MD codes, a valid PC and CF, and some junk. Since MD only allows one selection, both MD values are ignored. The rest of the valid codes are included. Junk is ignored.</p>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / Level 1 / 0a / MD0a / MD0b / CF 1a / nonsense123" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe id="widgetIframePC" src="/widget/TSRT9 / Level 1 / 0a / MD0a / MD0b / CF 1a / nonsense123" width="90%" height="400"></iframe>
+
+        <p><strong>Note:</strong> For 'Severity Level' (SL) and 'Method of Detection' (MD), only one selection is allowed regardless of widget load.</p>
+
+        <h3>Code Sanitisation:</h3>
+        <p>When embedding with existing error codes, the widget sanitises each entered code, ensuring it matches a known taxonomy code exactly. Non-matching codes, as well as ones from the wrong taxonomies, will simply be ignored. Duplicate entries of the same code are accepted but only appear once. If multiple different SL or MD codes are submitted, neither will be shown.</p>
+
+        <h2>Retrieving Values from the Widget</h2>
+        <p>Retrieve widget values using JavaScript:</p>
+
+        <code>
+&lt;script&gt;
+function requestValueFromWidget(iframeID) {
+    const iframe = document.getElementById(iframeID);
+    iframe.contentWindow.postMessage({ action: "getValue" }, "*");
+}
+
+window.addEventListener("message", function(event) {
+    if (event.data && event.data.action === "sendValue") {
+        console.log("Widget Value:", event.data.value);
+        navigator.clipboard.writeText(event.data.value);
+    }
+});
+&lt;/script&gt;
+        </code>
+
+        <p>The button below demonstrates retrieving a TSRT9 code from the final embedded widget above:</p>
+
+        <button class="copy-button" onclick="requestValueFromWidget('widgetIframePC')">Copy Code</button>
+
+        <button onclick="window.location.href='{{ url_for('home') }}';">Return Home</button>
+    </div>
+    <script>
+    function requestValueFromWidget(iframeID) {
+        const iframe = document.getElementById(iframeID);
+        iframe.contentWindow.postMessage({ action: "getValue" }, "*");
+    }
+
+    window.addEventListener("message", function(event) {
+        if (event.data && event.data.action === "sendValue") {
+            console.log("Widget Value:", event.data.value);
+            navigator.clipboard.writeText(event.data.value);
+        }
+    });
+    </script>
+</body>
+</html>
