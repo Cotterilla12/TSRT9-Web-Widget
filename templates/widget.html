@@ -12,18 +12,16 @@
         </div>
     </div>
     
+    {% if not singleTaxonomy %}
     <div class="button-container">
         <div class="button-row">
-            {% if not singleTaxonomy %}
                 <button id="SLBtn" onclick="showSLOptions()">Severity Level</button>
                 <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
                 <button id="MDBtn" onclick="showMDOptions()">Method of Detection</button>
                 <button id="CFBtn" onclick="showCFOptions()">Causative Factors</button>
-            {% endif %}
-            
-            <button id="ClearBtn" onclick="clearText()">Clear</button>
         </div>
     </div>
+    {% endif %}
     
 
     <!-- Dynamic menus for taxonomy entries -->
@@ -36,6 +34,10 @@
             </div>
         </div>
     </div>
+
+    <div class="clear-button-wrapper">
+        <button id="ClearBtn" onclick="clearText()">Reset</button>
+    </div>    
 
     <script>
         function showSLOptions() {
@@ -533,9 +535,6 @@
         function clearText() {
             let taxonomy = "{{ singleTaxonomy|default('') }}".toUpperCase();
             document.getElementById("rightContent").innerHTML = "";
-            if (taxonomy == ""){
-                toggleMenuButtons("ClearBtn");
-            }
             toggleButtons("", "leftContent");
             toggleButtons("", "taxonomyMenuSingle");
             

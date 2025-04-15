@@ -112,6 +112,13 @@ severityLevels = LoadData("Severity Levels.csv")
 
 app = Flask(__name__)
 
+@app.after_request
+def allow_iframe(response):
+    # Remove any restrictive headers
+    response.headers.pop('X-Frame-Options', None)
+    response.headers['Content-Security-Policy'] = "frame-ancestors *"
+    return response
+
 @app.route("/api/severity")
 def api_severity():
     return jsonify(severityLevels)

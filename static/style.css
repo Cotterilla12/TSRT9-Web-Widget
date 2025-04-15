@@ -150,3 +150,26 @@ button.selected-button {
     min-height: 0;
     overflow: hidden;
 }
+
+#clear-button-wrapper {
+    height: 30px;
+}
+
+.clear-button-wrapper {
+    flex-shrink: 0;
+    background: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 101;
+}
+
+/* This rule ensures the clear button spans the full width and
+   matches the look of the other toggle buttons */
+.clear-button-wrapper button {
+    width: 100%;
+    display: block;
+    white-space: nowrap;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid #000;  /* Matching border styling if desired */
+}
