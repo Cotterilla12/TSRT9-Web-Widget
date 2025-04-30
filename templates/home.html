@@ -18,9 +18,11 @@
         }
 
         iframe {
-            width: 100%;
+            width: 90%;
             height: 600px;
             border: 1px solid #000;
+            display: block;
+            margin: 0 auto;
         }
 
         .copy-button {
@@ -47,6 +49,8 @@
         {% endif %}
         <br>
         <button onclick="requestValueFromWidget()" class="copy-button">Copy</button>
+        <p>To copy the code to your clipboard, simply click on the displayed copy button<br></p>
+        <input type="button" value="Feedback Form" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdzvE2fIhrAjYww1oQqb45hb0GNT-_wDDvQ7GWrh6M9XQeJSg/viewform?usp=dialog')" /><br><br>
         <button onclick="window.location.href='/webdeveloperinformation';">Web developer information</button>
     </div>
     <script>

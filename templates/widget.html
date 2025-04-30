@@ -15,6 +15,7 @@
     {% if not singleTaxonomy %}
     <div class="button-container">
         <div class="button-row">
+                <button id="InstructionsBtn" onclick="showInstructions()">Instructions</button>
                 <button id="SLBtn" onclick="showSLOptions()">Severity Level</button>
                 <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
                 <button id="MDBtn" onclick="showMDOptions()">Method of Detection</button>
@@ -40,6 +41,49 @@
     </div>    
 
     <script>
+        function showInstructions() {
+            document.getElementById("taxonomyMenu").style.display = 'none';
+            const menu = document.getElementById("taxonomyMenuSingle");
+            menu.innerHTML = `<h3>Instructions:</h3>
+            <p>1. Start by clicking the "Severity Level" button to select the appropriate severity (only one is able to be selected)<br>
+                2. Continue to the "Pathway Codes" section and select all options that apply<br>
+                3. Proceed to the "Method of Detection" and make the appropriate selection (only one is able to be selected)<br>
+                4. Next, open the "Causative Factors" section and tick all applicable factors<br>
+                5. Once all sections are complete, the assembled incident code will appear in the box above<br>
+                6. To begin again, click the "Reset" button to reset all selections and start fresh</p>`;
+            menu.style.display = 'block';
+            if ("{{ singleTaxonomy|default('') }}".trim() === "") {
+                toggleMenuButtons("InstructionsBtn");
+            };
+        }
+
+        function displayInstructions(instructions){
+            const menu = document.getElementById("rightContent");
+            menu.innerHTML = instructions;
+        }
+
+        function singleTaxonomyInstructions(instructions){
+            {% if singleTaxonomy %}
+                const menu = document.getElementById("leftContent");
+                const wrapper = document.createElement("div");
+                wrapper.className = "taxonomy-entry";
+
+                const button = document.createElement("button");
+                button.textContent = "Instructions";
+                button.classList.add("toggle-button");
+                button.id = "instructionsBtn";
+                button.onclick = () => {
+                    displayInstructions(instructions);
+                    toggleButtons(button.id, "leftContent");
+                }
+
+                wrapper.appendChild(button);
+                menu.appendChild(wrapper);
+
+                button.click();
+            {% endif %}
+        }
+
         function showSLOptions() {
             document.getElementById("taxonomyMenu").style.display = 'none';
             const menu = document.getElementById("taxonomyMenuSingle");
@@ -53,6 +97,18 @@
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
+
+                    // Placing instructions if this is loaded in single taxonomy
+                    {% if singleTaxonomy %}
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
+
+                        const label = document.createElement("label");
+                        label.textContent = "Please select the appropriate severity level (only one is able to be selected)";
+                        wrapper.appendChild(label);
+                        menu.appendChild(wrapper);
+                    {% endif %}
+
                     Object.entries(data).forEach(([level, detailDict]) => {
                         const [label, description] = Object.entries(detailDict)[0];
 
@@ -116,6 +172,9 @@
                 tb.value = tb.value.replace(/Level\s*\d+/, level);
             }
             updateMenuButtonStatus();
+
+            // Inform the parent window the taxonomies have been updated
+            window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
         }
 
         function showPCOptions() {
@@ -131,6 +190,11 @@
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
+
+                    // Placing instructions if this is loaded in single taxonomy
+                    instructions = "Please carefully look through each record and select one or more pathway codes that best describe the process or pathway involved. You're welcome to choose multiple codes if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected."
+                    singleTaxonomyInstructions(instructions);
+
                     Object.entries(data).forEach((category) => {
                         const wrapper = document.createElement("div");
                         wrapper.className = "taxonomy-entry";
@@ -199,6 +263,9 @@
         function addRemoveCode(code, taxonomy, addBool) {
             const tb = document.getElementById("mainTextBox");
             let tbList = tb.value.split(" / ");
+
+            // Inform the parent window the taxonomies have been updated
+            window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
 
             let placeholder = "";
             if (taxonomy == "SL"){
@@ -312,7 +379,6 @@
             }
         }
 
-
         function sortCodes(codes){
             if (codes.length == 0){
                 return [];
@@ -367,6 +433,11 @@
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
+
+                    // Placing instructions if this is loaded in single taxonomy
+                    instructions = "Please select only one detection method per record that best indicates how the event was discovered. If you're unsure, the official definitions can help you choose the most suitable method.<br><br>Press the reset button at the bottom to reset the codes selected."
+                    singleTaxonomyInstructions(instructions);
+
                     Object.entries(data).forEach((category) => {
                         const wrapper = document.createElement("div");
                         wrapper.className = "taxonomy-entry";
@@ -446,6 +517,11 @@
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
+
+                    // Placing instructions if this is loaded in single taxonomy
+                    instructions = "For each record, identify and select one or more causative factors that contributed to the event. Multiple selections are encouraged when appropriate. Please refer to the provided definitions to ensure accuracy.<br><br>Press the reset button at the bottom to reset the codes selected."
+                    singleTaxonomyInstructions(instructions);
+
                     Object.entries(data).forEach((category) => {
                         const wrapper = document.createElement("div");
                         wrapper.className = "taxonomy-entry";
@@ -530,6 +606,11 @@
                     btn.classList.remove("menu-button-complete");
                 }
             });
+
+            {% if not singleTaxonomy %}
+                const InstructionsBtn = document.getElementById("InstructionsBtn");
+                InstructionsBtn.classList.add("menu-button-complete");
+            {% endif %}
         }
 
         function clearText() {
@@ -591,6 +672,11 @@
                 } else {
                     console.log("Function " + funcName + " not found.");
                 }
+            }
+            else {
+                showInstructions();
+                const InstructionsBtn = document.getElementById("InstructionsBtn");
+                InstructionsBtn.classList.remove("menu-button-complete");
             }
         });
     </script>
