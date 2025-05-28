@@ -1,6 +1,0 @@
-﻿Severity Code,Type,Severity Description
-Level 1,Reportable radiation incident,Notifiable accidental and unintended exposure under IR(ME)R
-Level 2,Non-reportable radiation incident,"Radiation incident which is not reportable, but of potential clinical significance"
-Level 3,Minor radiation incident,"Radiation incident in the technical sense, but of no potential or actual clinical significance"
-Level 4,Near miss,Potential radiation incident that was detected and prevented before treatment delivery
-Level 5,Other non-conformance,"Non-compliance with some other aspect of a documented procedure, but not directly affecting RT delivery"

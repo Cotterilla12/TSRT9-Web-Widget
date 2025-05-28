@@ -1,0 +1,15 @@
+﻿Code,Description
+D01,Simple (direct or parallel opposed fields) and electrons
+D02,Conformal
+D03,Intensity modulated radiotherapy (IMRT)(static field) excluding more specific definitions 
+D04,Rotational IMRT including volumetric modulated arc therapy (VMAT) and RapidArc
+D05,Intraoperative radiation therapy (IORT)
+D06,"Total body, skin radiotherapy - including total body irradiation (TBI) and total body electrons (TBE)"
+D07,Stereotactic ablative body radiotherapy (SABR)
+D08,"Stereotactic radiotherapy, radiosurgery (SRT, SRS) "
+D09,Proactive adaptive radiotherapy - predicts changes likely to occur and prepares a choice of plans (library of plans) to compensate for these changes
+D10,Real-time adaptive radiotherapy - creates and delivers a new plan online (on the treatment machine with patient in treatment position). Can occur for each fraction or when required
+D11,"Contact radiotherapy (superficial, orthovoltage, Papillion)"
+D12,Brachytherapy
+D13,Proton beam therapy
+D98,Other treatment

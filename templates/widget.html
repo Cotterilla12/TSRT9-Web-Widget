@@ -16,10 +16,13 @@
     <div class="button-container">
         <div class="button-row">
                 <button id="InstructionsBtn" onclick="showInstructions()">Instructions</button>
-                <button id="SLBtn" onclick="showSLOptions()">Severity Level</button>
-                <button id="PCBtn" onclick="showPCOptions()">Pathway Codes</button>
-                <button id="MDBtn" onclick="showMDOptions()">Method of Detection</button>
-                <button id="CFBtn" onclick="showCFOptions()">Causative Factors</button>
+                <button id="ClBtn" onclick="showSingleScreenOptions('Cl')">Classification</button>
+                <button id="PPSBtn" onclick="showMultiScreenOptions('PPS')">Primary Pathway Subcode</button>
+                <button id="APSBtn" onclick="showMultiScreenOptions('APS')">Additional Pathway Subcode</button>
+                <button id="MDBtn" onclick="showMultiScreenOptions('MD')">Method of Detection</button>
+                <button id="CFBtn" onclick="showMultiScreenOptions('CF')">Contributory Factors</button>
+                <button id="ModalityBtn" onclick="showSingleScreenOptions('Modality')">Modality</button>
+                <button id="SupplementalBtn" onclick="showSupplementalOptions()">Supplemental Info</button>
         </div>
     </div>
     {% endif %}
@@ -84,16 +87,24 @@
             {% endif %}
         }
 
-        function showSLOptions() {
+        function showSingleScreenOptions(taxonomy) {
             document.getElementById("taxonomyMenu").style.display = 'none';
             const menu = document.getElementById("taxonomyMenuSingle");
-            menu.innerHTML = 'Loading Severity Levels';
+            menu.innerHTML = 'Loading Classifications';
             menu.style.display = 'block';
             if ("{{ singleTaxonomy|default('') }}".trim() === "") {
-                toggleMenuButtons("SLBtn");
+                toggleMenuButtons(taxonomy + "Btn");
             };
 
-            fetch("/api/severity")
+            let api = "";
+            if (taxonomy == "Cl"){
+                api = "classification"
+            } else if (taxonomy == "Modality"){
+                api = "modality"
+            }
+            
+
+            fetch(`/api/${api}`)
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
@@ -104,41 +115,39 @@
                         wrapper.className = "taxonomy-entry";
 
                         const label = document.createElement("label");
-                        label.textContent = "Please select the appropriate severity level (only one is able to be selected)";
+                        label.textContent = `Please select the appropriate ${api} (only one is able to be selected)`;
                         wrapper.appendChild(label);
                         menu.appendChild(wrapper);
                     {% endif %}
 
-                    Object.entries(data).forEach(([level, detailDict]) => {
-                        const [label, description] = Object.entries(detailDict)[0];
-
+                    Object.entries(data).forEach(([code, description]) => {
                         const wrapper = document.createElement("div");
                         wrapper.className = "taxonomy-entry";
 
                         const button = document.createElement("button");
-                        button.textContent = level;
-                        button.id = "btn" + level.split(" ").join("");
+                        button.textContent = code;
+                        button.id = "btn" + code.split(" ").join("");
                         button.classList.add("toggle-button");
                         button.onclick = () => {
-                            insertSeverity(level);
+                            insertSingleCode(code, taxonomy);
                             toggleButtons(button.id, "taxonomyMenuSingle");
                         }
 
                         const desc = document.createElement("div");
                         desc.className = "description";
-                        desc.innerHTML = `<strong>${label}</strong> – ${description}`;
+                        desc.innerHTML = `<strong>${description}</strong>`;
 
                         wrapper.appendChild(button);
                         wrapper.appendChild(desc);
                         menu.appendChild(wrapper);
 
-                        if (document.getElementById("mainTextBox").value.includes(level)){
+                        if (document.getElementById("mainTextBox").value.includes(code)){
                             toggleButtons(button.id, "taxonomyMenuSingle")
                         }
                     });
                 })
                 .catch(err => {
-                    menu.innerHTML = '<p style="color:red;">Failed to load severity levels.</p>';
+                    menu.innerHTML = `<p style="color:red;">Failed to load ${api}.</p>`;
                     console.error(err);
                 });
         }
@@ -163,36 +172,82 @@
             }
         }
 
-        function insertSeverity(level) {
+        function insertSingleCode(code, taxonomy) {
             const tb = document.getElementById("mainTextBox");
-            if (tb.value.includes("(Severity Level)")) {
-                tb.value = tb.value.replace("(Severity Level)", level);
-            }
-            else {
-                tb.value = tb.value.replace(/Level\s*\d+/, level);
-            }
+            let tbList = tb.value.split(" / ");
+
+            {% if singleTaxonomy %}
+                tb.value = code;
+            {% else %}
+                let MDPoint = -1;
+                for (let i = 4; i < tbList.length; i++){
+                    if (tbList[i].includes("MD") || tbList[i].includes("(Method of Detection)")){
+                        MDPoint = i;
+                        break;
+                    }
+                }
+
+                let ClTax = tbList.slice(0, 2);
+                let PPSTax = tbList.slice(2, 3);
+                let APSTax = tbList.slice(3, MDPoint);
+                let MDTax = tbList[MDPoint];
+                let CFTax = tbList.slice(MDPoint + 1, tbList.length - 1);
+                let modalityTax = tbList[tbList.length - 1];
+
+                let placeholder = "";
+                if (taxonomy == "Cl"){
+                    tbList[1] = code;
+                } else if (taxonomy == "PPS"){
+                    tbList[2] = code;
+                } else if (taxonomy == "MD"){
+                    tbList[MDPoint] = code;
+                } else if (taxonomy == "Modality"){
+                    tbList[tbList.length - 1] = code;
+                }
+
+                tb.value = tbList.join(" / ");
+            {% endif %}
+
             updateMenuButtonStatus();
 
             // Inform the parent window the taxonomies have been updated
             window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
         }
 
-        function showPCOptions() {
+        function showMultiScreenOptions(taxonomy) {
             document.getElementById("taxonomyMenuSingle").style.display = 'none';
             document.getElementById("leftContent").innerHTML = '';
             document.getElementById("rightContent").innerHTML = '';
             const menu = document.getElementById("leftContent");
-            menu.innerHTML = 'Loading Pathway Code Categories';
-            document.getElementById("taxonomyMenu").style.display = 'flex';
-            toggleMenuButtons("PCBtn");
 
-            fetch("/api/pathwaycodes")
+            let api = "";
+            let placeholder = "";
+
+            if (taxonomy == "PPS"){
+                api = "pathwaysubcodes"
+                placeholder = "Pathway Subcodes"
+            } else if (taxonomy == "APS"){
+                api = "pathwaysubcodes"
+                placeholder = "Pathway Subcodes"
+            } else if (taxonomy == "MD"){
+                api = "pathwaysubcodes"
+                placeholder = "Pathway Subcodes"
+            } else if (taxonomy == "CF"){
+                api = "contributoryfactors"
+                placeholder = "Contributory Factors"
+            }
+
+            menu.innerHTML = `Loading ${api} Categories`;
+            document.getElementById("taxonomyMenu").style.display = 'flex';
+            toggleMenuButtons(taxonomy + "Btn");
+
+            fetch(`/api/${api}`)
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
 
                     // Placing instructions if this is loaded in single taxonomy
-                    instructions = "Please carefully look through each record and select one or more pathway codes that best describe the process or pathway involved. You're welcome to choose multiple codes if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected."
+                    instructions = `Please carefully look through each record and select one or more ${placeholder.toLowerCase()} that best describe the process or pathway involved. You're welcome to choose multiple codes if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
                     singleTaxonomyInstructions(instructions);
 
                     Object.entries(data).forEach((category) => {
@@ -204,7 +259,7 @@
                         button.classList.add("toggle-button");
                         button.id = "btn" + category[1].split(":")[0];
                         button.onclick = () => {
-                            displayPCcategory(category[1]);
+                            displayCategory(category[1], taxonomy);
                             toggleButtons(button.id, "leftContent");
                         }
 
@@ -213,77 +268,130 @@
                     });
                 })
                 .catch(err => {
-                    menu.innerHTML = '<p style="color:red;">Failed to load pathway codes.</p>';
+                    menu.innerHTML = `<p style="color:red;">Failed to load ${placeholder.toLowerCase()}.</p>`;
                     console.error(err);
                 });
         }
 
-        function displayPCcategory(category){
-            const menu = document.getElementById("rightContent");
-            menu.innerHTML = 'Loading Pathway Codes';
+        function displayCategory(category, taxonomy){
+            let api = "";
+            let single = false;
+            let placeholder = "";
 
-            fetch(`/api/pathwaycodes/${category}`)
+            if (taxonomy == "PPS"){
+                api = "pathwaysubcodes"
+                single = true;
+                placeholder = "Pathway Subcodes"
+            } else if (taxonomy == "APS"){
+                api = "pathwaysubcodes"
+                placeholder = "Pathway Subcodes"
+            } else if (taxonomy == "MD"){
+                api = "pathwaysubcodes"
+                single = true;
+                placeholder = "Pathway Subcodes"
+            } else if (taxonomy == "CF"){
+                api = "contributoryfactors"
+                placeholder = "Contributory Factors"
+            }
+
+            const menu = document.getElementById("rightContent");
+            menu.innerHTML = `Loading ${placeholder}`;
+
+            fetch(`/api/${api}/${category}`)
                 .then(res => res.json())
                 .then(data => {
                     menu.innerHTML = '';
                     sortCodes(Object.keys(data)).forEach(code => {
                         const detailList = data[code];
-                        const label = detailList[0];
-                        const SB = detailList[1] || ""; // fallback to empty if null
+                        const label = detailList;
 
                         const wrapper = document.createElement("div");
                         wrapper.className = "taxonomy-entry";
 
-                        const checkbox = document.createElement("input");
-                        checkbox.type = "checkbox";
-                        checkbox.value = label;
-                        checkbox.id = `cb-${code}`;
-                        checkbox.checked = document.getElementById("mainTextBox").value.includes("/ " + code + " /");
-                        if ("{{ singleTaxonomy|default('') }}".trim() != ""){
-                            checkbox.checked = document.getElementById("mainTextBox").value.includes(code);
+                        if (single){
+                            const detailList = data[code];
+                            const label = detailList;
+
+                            const wrapper = document.createElement("div");
+                            wrapper.className = "taxonomy-entry";
+
+                            const button = document.createElement("button");
+                            button.textContent = code
+                            button.classList.add("toggle-button");
+                            button.id = "btn" + code;
+                            button.onclick = () => {
+                                insertSingleCode(taxonomy == "MD" ? "MD" + code : code, taxonomy);
+                                toggleButtons(button.id, "rightContent");
+                                {% if not singleTaxonomy %}
+                                    if (taxonomy == "PPS"){
+                                        addRemoveMultiCode(code, "APS", false);
+                                    }
+                                {% endif %}
+                            }
+
+                            const buttonLabel = document.createElement("label");
+                            buttonLabel.innerHTML = label;
+
+                            wrapper.appendChild(button);
+                            wrapper.appendChild(buttonLabel);
+                            menu.appendChild(wrapper);
+
+                            if (document.getElementById("mainTextBox").value.includes(taxonomy == "MD" ? "MD" + code : code) && taxonomy != "PPS"){
+                                toggleButtons(button.id, "rightContent")
+                            } else if (taxonomy == "PPS" && document.getElementById("mainTextBox").value.split(" / ")[2] == code){
+                                toggleButtons(button.id, "rightContent")
+                            }
+                        } else{
+                            const checkbox = document.createElement("input");
+                            checkbox.type = "checkbox";
+                            checkbox.value = label;
+                            checkbox.id = `cb-${code}`;
+                            checkbox.checked = document.getElementById("mainTextBox").value.split(" / ").splice(4).includes(code);
+
+                            {% if not singleTaxonomy %}
+                                checkbox.disabled = document.getElementById("mainTextBox").value.split("/")[2].trim() == code
+                            {% endif %}
+
+                            if ("{{ singleTaxonomy|default('') }}".trim() != ""){
+                                checkbox.checked = document.getElementById("mainTextBox").value.includes(code);
+                            }
+                            checkbox.onchange = () => addRemoveMultiCode(code, taxonomy, checkbox.checked);
+
+                            const checkboxLabel = document.createElement("label");
+                            checkboxLabel.htmlFor = checkbox.id;
+                            checkboxLabel.innerHTML = `${code}: ${label}`;
+
+                            wrapper.appendChild(checkbox);
+                            wrapper.appendChild(checkboxLabel);
+                            menu.appendChild(wrapper);
                         }
-                        checkbox.onchange = () => addRemoveCode(code, "PC", checkbox.checked);
-
-                        const checkboxLabel = document.createElement("label");
-                        checkboxLabel.htmlFor = checkbox.id;
-                        checkboxLabel.innerHTML = SB ? `${code}: <strong>${SB}</strong> – ${label}` : `${code}: ${label}`;
-
-                        wrapper.appendChild(checkbox);
-                        wrapper.appendChild(checkboxLabel);
-                        menu.appendChild(wrapper);
                     });
                 })
                 .catch(err => {
-                    menu.innerHTML = '<p style="color:red;">Failed to load pathway codes.</p>';
+                    menu.innerHTML = '<p style="color:red;">Failed to load pathway subcodes.</p>';
                     console.error(err);
                 }
             );
         }
 
-        function addRemoveCode(code, taxonomy, addBool) {
+        function addRemoveMultiCode(code, taxonomy, addBool) {
             const tb = document.getElementById("mainTextBox");
             let tbList = tb.value.split(" / ");
 
             // Inform the parent window the taxonomies have been updated
             window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
 
-            let placeholder = "";
-            if (taxonomy == "SL"){
-                placeholder = "(Severity Level)";
-            } else if (taxonomy == "PC"){
-                placeholder = "(Pathway Codes)";
-            } else if (taxonomy == "MD"){
-                placeholder = "(Method of Detection)";
+            let placeholder = [];
+            if (taxonomy == "APS"){
+                placeholder = "(Additional Pathway Subcodes)";
+                {% if singleTaxonomy %}
+                    placeholder = "(Pathway Subcodes)";
+                {% endif %}
             } else if (taxonomy == "CF"){
-                placeholder = "(Causative Factors)";
+                placeholder = "(Contributory Factors)";
             }
             
             if ("{{ singleTaxonomy|default('') }}".trim() != ""){
-                if (taxonomy == "MD"){
-                    tb.value = "MD" + code;
-                    return;
-                }
-
                 if (addBool){
                     if (tb.value == placeholder){
                         tb.value = code;
@@ -308,37 +416,33 @@
             }
 
             let MDPoint = -1
-            for (let i = 3; i < tbList.length; i++){
+            for (let i = 4; i < tbList.length; i++){
                 if (tbList[i].includes("MD") || tbList[i].includes("(Method of Detection)")){
                     MDPoint = i;
                     break;
                 }
             }
 
-            let levelTax = tbList.slice(0, 2);
-            let PCTax = tbList.slice(2, MDPoint);
+            let ClTax = tbList.slice(0, 2);
+            let PPSTax = tbList.slice(2, 3);
+            let APSTax = tbList.slice(3, MDPoint);
             let MDTax = tbList[MDPoint];
-            let CFTax = tbList.slice(MDPoint + 1);
+            let CFTax = tbList.slice(MDPoint + 1, tbList.length - 1);
+            let modalityTax = tbList[tbList.length - 1];
 
             let taxonomyToEdit = [];
-            if (taxonomy == "PC"){
-                taxonomyToEdit = PCTax;
-            } else if (taxonomy == "MD"){
-                taxonomyToEdit = MDTax;
+            if (taxonomy == "APS"){
+                taxonomyToEdit = APSTax;
             } else if (taxonomy == "CF"){
                 taxonomyToEdit = CFTax;
             }
 
-            if (taxonomyToEdit.length == 1 && taxonomyToEdit[0] == placeholder && taxonomy != "MD"){
-                taxonomyToEdit = [];
-            }
-
-            if(addBool && taxonomy != "MD"){
-                if (!taxonomyToEdit.includes(code)){
+            if(addBool){
+                if (taxonomyToEdit[0] == placeholder){
+                    taxonomyToEdit[0] = code;
+                } else if(!taxonomyToEdit.includes(code)){
                     taxonomyToEdit = sortCodes(taxonomyToEdit.concat(code));
                 }
-            } else if (addBool && taxonomy == "MD"){
-                taxonomyToEdit = "MD" + code;
             } else {
                 const index = taxonomyToEdit.indexOf(code);
                 if(index != -1){
@@ -350,12 +454,10 @@
             }
 
             let fullTaxonomy = []
-            if (taxonomy == "PC"){
-                fullTaxonomy = levelTax.concat(sortCodes(taxonomyToEdit), MDTax, sortCodes(CFTax));
-            } else if (taxonomy == "MD"){
-                fullTaxonomy = levelTax.concat(sortCodes(PCTax), taxonomyToEdit, sortCodes(CFTax));
+            if (taxonomy == "APS"){
+                fullTaxonomy = ClTax.concat(PPSTax, sortCodes(taxonomyToEdit), MDTax, sortCodes(CFTax), modalityTax);
             } else if (taxonomy == "CF"){
-                fullTaxonomy = levelTax.concat(sortCodes(PCTax), MDTax, sortCodes(taxonomyToEdit));
+                fullTaxonomy = ClTax.concat(PPSTax, sortCodes(APSTax), MDTax, sortCodes(taxonomyToEdit), modalityTax);
             }
 
             tb.value = fullTaxonomy.join(" / ")
@@ -420,179 +522,16 @@
             return splitCodes.map(parts => prefix + parts[1] + parts[2]);
         }
 
-        function showMDOptions() {
-            document.getElementById("taxonomyMenuSingle").style.display = 'none';
-            document.getElementById("leftContent").innerHTML = '';
-            document.getElementById("rightContent").innerHTML = '';
-            const menu = document.getElementById("leftContent");
-            menu.innerHTML = 'Loading Method of Detection Categories';
-            document.getElementById("taxonomyMenu").style.display = 'flex';
-            toggleMenuButtons("MDBtn");
-
-            fetch("/api/pathwaycodes")
-                .then(res => res.json())
-                .then(data => {
-                    menu.innerHTML = '';
-
-                    // Placing instructions if this is loaded in single taxonomy
-                    instructions = "Please select only one detection method per record that best indicates how the event was discovered. If you're unsure, the official definitions can help you choose the most suitable method.<br><br>Press the reset button at the bottom to reset the codes selected."
-                    singleTaxonomyInstructions(instructions);
-
-                    Object.entries(data).forEach((category) => {
-                        const wrapper = document.createElement("div");
-                        wrapper.className = "taxonomy-entry";
-
-                        const button = document.createElement("button");
-                        button.textContent = category[1];
-                        button.id = "btnMDCategory" + category[1].replace(/\s+/g, "");
-                        button.classList.add("toggle-button");
-                        button.onclick = () => {
-                            displayMDcategory(category[1]);
-                            toggleButtons(button.id, "leftContent");
-                        }
-
-                        wrapper.appendChild(button);
-                        menu.appendChild(wrapper);
-                    });
-                })
-                .catch(err => {
-                    menu.innerHTML = '<p style="color:red;">Failed to load methods of detection.</p>';
-                    console.error(err);
-                });
-        }
-
-        function displayMDcategory(category){
-            const menu = document.getElementById("rightContent");
-            menu.innerHTML = 'Loading Methods of Detection';
-
-            fetch(`/api/pathwaycodes/${category}`)
-                .then(res => res.json())
-                .then(data => {
-                    menu.innerHTML = '';
-                    sortCodes(Object.keys(data)).forEach(code => {
-                        const detailList = data[code];
-                        const label = detailList[0];
-                        const SB = detailList[1] || ""; // fallback to empty if null
-
-                        const wrapper = document.createElement("div");
-                        wrapper.className = "taxonomy-entry";
-
-                        const button = document.createElement("button");
-                        button.textContent = code
-                        button.classList.add("toggle-button");
-                        button.id = "btn" + code;
-                        button.onclick = () => {
-                            addRemoveCode(code, "MD", true);
-                            toggleButtons(button.id, "rightContent");
-                        }
-
-                        const buttonLabel = document.createElement("label");
-                        buttonLabel.innerHTML = SB ? `<strong>${SB}</strong> – ${label}` : label;
-
-                        wrapper.appendChild(button);
-                        wrapper.appendChild(buttonLabel);
-                        menu.appendChild(wrapper);
-
-                        if (document.getElementById("mainTextBox").value.includes("MD" + code)){
-                            toggleButtons(button.id, "rightContent")
-                        }
-                    });
-                })
-                .catch(err => {
-                    menu.innerHTML = '<p style="color:red;">Failed to load method of detection.</p>';
-                    console.error(err);
-                });
-        }
-
-        function showCFOptions() {
-            document.getElementById("taxonomyMenuSingle").style.display = 'none';
-            document.getElementById("leftContent").innerHTML = '';
-            document.getElementById("rightContent").innerHTML = '';
-            const menu = document.getElementById("leftContent");
-            menu.innerHTML = 'Loading Causative Factor Categories';
-            document.getElementById("taxonomyMenu").style.display = 'flex';
-            toggleMenuButtons("CFBtn");
-
-            fetch("/api/causativefactors")
-                .then(res => res.json())
-                .then(data => {
-                    menu.innerHTML = '';
-
-                    // Placing instructions if this is loaded in single taxonomy
-                    instructions = "For each record, identify and select one or more causative factors that contributed to the event. Multiple selections are encouraged when appropriate. Please refer to the provided definitions to ensure accuracy.<br><br>Press the reset button at the bottom to reset the codes selected."
-                    singleTaxonomyInstructions(instructions);
-
-                    Object.entries(data).forEach((category) => {
-                        const wrapper = document.createElement("div");
-                        wrapper.className = "taxonomy-entry";
-
-                        const button = document.createElement("button");
-                        button.textContent = category[1];
-                        button.id = "btn" + category[1].replace(/\s+/g, "");
-                        button.classList.add("toggle-button");
-                        button.onclick = () => {
-                            displayCFcategory(category[1]);
-                            toggleButtons(button.id, "leftContent");
-                        }
-
-                        wrapper.appendChild(button);
-                        menu.appendChild(wrapper);
-                    });
-                })
-                .catch(err => {
-                    menu.innerHTML = '<p style="color:red;">Failed to load causative factors.</p>';
-                    console.error(err);
-                });
-        }
-
-        function displayCFcategory(category){
-            const menu = document.getElementById("rightContent");
-            menu.innerHTML = 'Loading Causative Factors';
-
-            fetch(`/api/causativefactors/${category}`)
-                .then(res => res.json())
-                .then(data => {
-                    menu.innerHTML = '';
-                    sortCodes(Object.keys(data)).forEach(code => {
-                        const detailList = data[code];
-                        const label = detailList;
-
-                        const wrapper = document.createElement("div");
-                        wrapper.className = "taxonomy-entry";
-
-                        const checkbox = document.createElement("input");
-                        checkbox.type = "checkbox";
-                        checkbox.value = label;
-                        checkbox.id = `cb-${code}`;
-                        checkbox.checked = document.getElementById("mainTextBox").value.includes("/ " + code)
-                        if ("{{ singleTaxonomy|default('') }}".trim() != ""){
-                            checkbox.checked = document.getElementById("mainTextBox").value.includes(code);
-                        }
-                        checkbox.onchange = () => addRemoveCode(code, "CF", checkbox.checked);
-
-                        const checkboxLabel = document.createElement("label");
-                        checkboxLabel.htmlFor = checkbox.id;
-                        checkboxLabel.innerHTML = `<strong>${code}</strong>: ${label}`;
-
-                        wrapper.appendChild(checkbox);
-                        wrapper.appendChild(checkboxLabel);
-                        menu.appendChild(wrapper);
-                    });
-                })
-                .catch(err => {
-                    menu.innerHTML = '<p style="color:red;">Failed to load causative factors.</p>';
-                    console.error(err);
-                });
-        }
-
         function updateMenuButtonStatus() {
             const tbString = document.getElementById("mainTextBox").value;
 
             const sections = {
-                SL: ["(Severity Level)", "SLBtn"],
-                PC: ["(Pathway Codes)", "PCBtn"],
+                Cl: ["(Classification)", "ClBtn"],
+                PPS: ["(Primary Pathway Subcode)", "PPSBtn"],
+                APS: ["(Additional Pathway Subcodes)", "APSBtn"],
                 MD: ["(Method of Detection)", "MDBtn"],
-                CF: ["(Causative Factors)", "CFBtn"]
+                CF: ["(Contributory Factors)", "CFBtn"],
+                Modality: ["(Modality)", "ModalityBtn"]
             };
 
             Object.entries(sections).forEach(([taxonomy, [placeholder, btnID]]) => {
@@ -619,32 +558,43 @@
             toggleButtons("", "leftContent");
             toggleButtons("", "taxonomyMenuSingle");
             
-            let taxSL = sortCodes({{ SLTaxonomy|default([])|tojson }});
-            let taxPC = sortCodes({{ PCTaxonomy|default([])|tojson }});
+            let taxCl = sortCodes({{ ClTaxonomy|default([])|tojson }});
+            let taxPPS = sortCodes({{ PPSTaxonomy|default([])|tojson }});
+            let taxAPS = sortCodes({{ APSTaxonomy|default([])|tojson }});
             let taxMD = sortCodes({{ MDTaxonomy|default([])|tojson }});
             let taxCF = sortCodes({{ CFTaxonomy|default([])|tojson }});
+            let taxModality = sortCodes({{ modalityTaxonomy|default([])|tojson }});
             
-            if (taxonomy == "SL") {
+            if (taxonomy == "CL") {
                 document.getElementById("mainTextBox").value =
-                    (taxSL.length ? taxSL[0] : "(Severity Level)");
-                showSLOptions()
-            } else if (taxonomy == "PC") {
+                    (taxCl.length ? taxCl[0] : "(Classification)");
+            } else if (taxonomy == "PPS") {
                 document.getElementById("mainTextBox").value =
-                    (taxPC.length ? taxPC.join(" / ") : "(Pathway Codes)");
+                    (taxPPS.length ? taxPPS[0] : "(Primary Pathway Subcode)");
+            } else if (taxonomy == "APS") {
+                document.getElementById("mainTextBox").value =
+                    taxAPS.length
+                    ? taxAPS.join(" / ")
+                    : (taxonomy == "" ? "(Additional Pathway Subcodes)" : "(Pathway Subcodes)");
             } else if (taxonomy == "MD") {
                 document.getElementById("mainTextBox").value =
                     (taxMD.length ? taxMD[0] : "(Method of Detection)");
             } else if (taxonomy == "CF") {
                 document.getElementById("mainTextBox").value =
-                    (taxCF.length ? taxCF.join(" / ") : "(Causative Factors)");
+                    (taxCF.length ? taxCF.join(" / ") : "(Contributory Factors)");
+            } else if (taxonomy == "MODALITY") {
+                document.getElementById("mainTextBox").value =
+                    (taxModality.length ? taxModality[0] : "(Modality)");
             }
             
             if (taxonomy == "") {
                 let finalText = "TSRT9";
-                finalText += " / " + (taxSL.length ? taxSL.join(" / ") : "(Severity Level)");
-                finalText += " / " + (taxPC.length ? taxPC.join(" / ") : "(Pathway Codes)");
+                finalText += " / " + (taxCl.length ? taxCl.join(" / ") : "(Classification)");
+                finalText += " / " + (taxPPS.length ? taxPPS[0] : "(Primary Pathway Subcode)");
+                finalText += " / " + (taxAPS.length ? taxAPS.join(" / ") : "(Additional Pathway Subcodes)");
                 finalText += " / " + (taxMD.length ? taxMD.join(" / ") : "(Method of Detection)");
-                finalText += " / " + (taxCF.length ? taxCF.join(" / ") : "(Causative Factors)");
+                finalText += " / " + (taxCF.length ? taxCF.join(" / ") : "(Contributory Factors)");
+                finalText += " / " + (taxModality.length ? taxModality[0] : "(Modality)");
                 document.getElementById("mainTextBox").value = finalText;
             }
 
@@ -666,11 +616,10 @@
 
             var singleTax = "{{ singleTaxonomy|default('') }}".toUpperCase();
             if (singleTax) {
-                var funcName = "show" + singleTax + "Options";
-                if (typeof window[funcName] === "function") {
-                    window[funcName]();
-                } else {
-                    console.log("Function " + funcName + " not found.");
+                if (["CL", "MODALITY"].includes(singleTax)){
+                    showSingleScreenOptions(singleTax.charAt(0).toUpperCase() + singleTax.slice(1).toLowerCase())
+                } else if (["PPS", "APS", "MD", "CF"].includes(singleTax)){
+                    showMultiScreenOptions(singleTax);
                 }
             }
             else {

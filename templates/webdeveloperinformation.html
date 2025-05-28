@@ -57,23 +57,32 @@
         <h2>Embedding with Single Taxonomy</h2>
         <p>Embed the widget displaying only one taxonomy by choosing one of the following:</p>
         
-        <strong>Severity Level (SL):</strong>
+        <strong>Classification (Cl):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/SL" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/Cl" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
-        <iframe src="/widget/SL" width="90%" height="400"></iframe>
+        <iframe src="/widget/Cl" width="90%" height="400"></iframe>
 
-        <strong>Pathway Codes (PC):</strong>
+        <strong>Primary Pathway Subcode (PPS):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/PC" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/PPS" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
-        <iframe src="/widget/PC" width="90%" height="400"></iframe>
+        <iframe src="/widget/PPS" width="90%" height="400"></iframe>
+
+        <strong>Pathway Subcodes (APS):</strong>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/APS" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/APS" width="90%" height="400"></iframe>
 
         <strong>Method of Detection (MD):</strong>
         <code>
@@ -84,7 +93,7 @@
         </code>
         <iframe src="/widget/MD" width="90%" height="400"></iframe>
 
-        <strong>Causative Factors (CF):</strong>
+        <strong>Contributory Factors (CF):</strong>
         <code>
 &lt;iframe 
     src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/CF" 
@@ -92,6 +101,15 @@
 &lt;/iframe&gt;
         </code>
         <iframe src="/widget/CF" width="90%" height="400"></iframe>
+
+        <strong>Modality (Modality):</strong>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/Modality" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/Modality" width="90%" height="400"></iframe>
 
         <h2>Embedding with Existing Error Code</h2>
         <p>Embed the widget preloaded with an existing TSRT9 error code (Example: TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e):</p>
@@ -134,7 +152,7 @@
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
-        <iframe id="widgetIframePC" src="/widget/PC/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" width="90%" height="400"></iframe>
+        <iframe id="widgetIframePC" src="/widget/APS/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" width="90%" height="400"></iframe>
         
         <p><strong>Example 5:</strong> Due to overzealous matching, the code can be completely shuffled and mangled with spaces. All of the codes will appear in the right order.</p>
         <code>
