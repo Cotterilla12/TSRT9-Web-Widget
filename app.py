@@ -72,8 +72,7 @@ def SanatiseCodes(codes):
         lower_code = code.lower()  # Convert the user input code to lower case
         matchingCL = next((original for original in allClassifications
                            if original.replace(" ", "").lower() == lower_code.replace(" ", "")), None)
-        matchingPPS = []
-        matchingAPS = next((original for original in allPathwayCodes
+        matchingPS = next((original for original in allPathwayCodes
                            if original.replace(" ", "").lower() == lower_code), None)
         matchingMD = next((original for original in allMethodsOfDetection
                            if original.replace(" ", "").lower() == lower_code), None)
@@ -84,9 +83,10 @@ def SanatiseCodes(codes):
         
         if matchingCL is not None:
             CL.append(matchingCL)
-        # Sort out matchingPPS later
-        elif matchingAPS is not None:
-            APS.append(matchingAPS)
+        elif matchingPS is not None and len(PPS) == 0:
+            PPS.append(matchingPS)
+        elif matchingPS is not None and len(PPS) != 0:
+            APS.append(matchingPS)
         elif matchingMD is not None:
             MD.append(matchingMD)
         elif matchingCF is not None:
@@ -146,6 +146,10 @@ def api_causative(category):
     if category is None:
         return jsonify(sorted(list(contributoryFactors.keys()), key = lambda x: int(x[2])))
     return jsonify(contributoryFactors[category])
+
+@app.route("/api/sites")
+def api_sites():
+    return jsonify(pd.read_csv("data/Sites.csv").values.tolist())
 
 @app.route("/api/modality")
 def api_modality():
