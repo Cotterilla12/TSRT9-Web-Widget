@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TSRT9</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesupplemental.css') }}">
+</head>
+<body>
+<div class="taxonomy-container">
+  <div id="taxonomyMenuSingle">
+    <div class="entry-div">
+      <label>Anatomical Site: </label>
+      <select id="anatomicalSite">
+        <option value=""></option>
+        <option value="Axilla">Axilla</option>
+        <option value="Bladder">Bladder</option>
+        <option value="Brain">Brain</option>
+        <option value="Breast">Breast</option>
+        <option value="Cervix">Cervix</option>
+        <option value="Endometrium">Endometrium</option>
+        <option value="Head &amp; neck">Head &amp; neck</option>
+        <option value="Lung">Lung</option>
+        <option value="Oesophagus">Oesophagus</option>
+        <option value="Prostate">Prostate</option>
+        <option value="Prostate and Nodes">Prostate and Nodes</option>
+        <option value="Skin">Skin</option>
+        <option value="Spine">Spine</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="entry-div">
+      <label>Prescribed Dose: </label>
+      <input type="number" id="prescribedDose" min="0">
+      <label>Gy</label>
+    </div>
+
+    <div class="entry-div">
+      <label>Fractionation: </label>
+      <input type="number" id="fractionation" min="0">
+      <label>#</label>
+    </div>
+
+    <div class="entry-div">
+      <label>Intended Exposure: </label>
+      <input type="number" id="intendedExposure" min="0">
+      <label>Gy</label>
+    </div>
+
+    <div class="entry-div">
+      <label>Actual Exposure: </label>
+      <input type="number" id="actualExposure" min="0">
+      <label>Gy</label>
+    </div>
+
+    <div class="entry-div">
+      <label>Geographic Misplacement: </label>
+      <input type="number" id="geographicMisplacement" min="0">
+      <label>mm</label>
+    </div>
+
+    <br>
+
+    <div class="entry-div-top">
+      <label>Description of each contributory Factor:</label>
+    </div>
+
+    <div class="entry-div-cf">
+      <label>CF5a: </label>
+      <input type="text" id="CF5aDesc">
+    </div>
+
+    <div class="entry-div-cf">
+      <label>CF5d: </label>
+      <input type="text" id="CF5dDesc">
+    </div>
+
+    <div class="entry-div-cf">
+      <label>CF5e: </label>
+      <input type="text" id="CF5eDesc">
+    </div>
+
+    <br>
+
+    <div class="entry-div">
+      <label>Describe how the issue was detected: </label>
+      <textarea id="detection" rows="4"></textarea>
+    </div>
+
+    <br>
+
+    <div class="entry-div-top">
+      <label>Select all areas of the pathway where this issue should have been detected:</label>
+    </div>
+
+    <div class="entry-div-bot">
+      <iframe src="/widget/APS"></iframe>
+    </div>
+
+    <br>
+
+    <div class="entry-div">
+      <label>Describe the implications experienced by the patient due to this error: </label>
+      <textarea id="patientImplications" rows="4"></textarea>
+    </div>
+
+    <br>
+
+    <div class="entry-div">
+      <label>Describe the corrective actions needing to take place: </label>
+      <textarea id="correctiveActions" rows="4"></textarea>
+    </div>
+
+    <br>
+
+    <div class="entry-div-top">
+      <label>Equipment related Malfunctions:</label>
+    </div>
+
+    <div>
+      <div></div>
+      <label>Serial No: </label>
+      <input type="text" id="newSerialNo">
+      <div></div>
+      <label>Equipment Type: </label>
+      <input type="text" id="newEquipmentType">
+    </div>
+  </div>
+</div>
+</body>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, jsonify
+from flask import Flask, render_template, redirect, url_for, jsonify, request
 import pandas as pd
 import numpy as np
 import os
@@ -147,9 +147,13 @@ def api_causative(category):
         return jsonify(sorted(list(contributoryFactors.keys()), key = lambda x: int(x[2])))
     return jsonify(contributoryFactors[category])
 
-@app.route("/api/sites")
-def api_sites():
-    return jsonify(pd.read_csv("data/Sites.csv").values.tolist())
+@app.route("/api/supplementalinfo")
+def api_supplementainfo():
+    supplementalDict = request.args.get("supplementalDict", "")
+
+    sites = jsonify(pd.read_csv("data/Sites.csv").values.tolist())
+
+    return render_template("supplementalinfo.html", supplementalDict=supplementalDict, sites=sites)
 
 @app.route("/api/modality")
 def api_modality():
