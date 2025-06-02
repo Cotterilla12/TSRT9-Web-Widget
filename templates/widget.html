@@ -671,6 +671,10 @@
             {% endif %}
         }
 
+        function supplementalIsActive () {
+            return document.getElementById("SupplementalBtn").classList.contains("selected-button");
+        }
+
         function clearText() {
             let taxonomy = "{{ singleTaxonomy|default('') }}".toUpperCase();
             document.getElementById("rightContent").innerHTML = "";
@@ -698,6 +702,12 @@
                 correctiveActions: "",
                 equipmentRelatedInformation: []
             };
+
+            try {
+                if (supplementalIsActive()) {
+                    showSupplementalOptions();
+                }
+            } catch (e) {}
 
             Displayed_CF.forEach(cf => {
                 SupplementalInfo_Dict.CFdescription[cf] = "";

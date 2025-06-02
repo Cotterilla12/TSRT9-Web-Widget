@@ -276,7 +276,7 @@
 
   function AddMalfunction() {
     const container = document.getElementById("equipmentRelatedInformation");
-    const i = container.querySelectorAll('div.entry-div-cf').length;
+    const i = SupplementalInfo_Dict.equipmentRelatedInformation.length + 1;
 
     const wrapper = document.createElement('div');
     wrapper.className = "entry-div-cf";
