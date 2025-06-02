@@ -18,7 +18,7 @@
                 <button id="InstructionsBtn" onclick="showInstructions()">Instructions</button>
                 <button id="ClBtn" onclick="showSingleScreenOptions('Cl')">Classification</button>
                 <button id="PPSBtn" onclick="showMultiScreenOptions('PPS')">Primary Pathway Subcode</button>
-                <button id="APSBtn" onclick="showMultiScreenOptions('APS')">Additional Pathway Subcode</button>
+                <button id="APSBtn" onclick="showMultiScreenOptions('APS')">Additional Pathway Subcodes</button>
                 <button id="MDBtn" onclick="showMultiScreenOptions('MD')">Method of Detection</button>
                 <button id="CFBtn" onclick="showMultiScreenOptions('CF')">Contributory Factors</button>
                 <button id="ModalityBtn" onclick="showSingleScreenOptions('Modality')">Modality</button>
@@ -71,16 +71,16 @@
             precedingDetectionPoints: [],
             patientImplications: "",
             correctiveActions: "",
-            equipmentRelatedInformation: {}
+            equipmentRelatedInformation: []
         };
 
         function UpdateTextbox() {
             const tb = document.getElementById("mainTextBox");
 
             {% if singleTaxonomy %}
-                const taxonomy = "{{ singleTaxonomy }}"
+                const taxonomy = "{{ singleTaxonomy }}".toUpperCase();
 
-                if (taxonomy == "Cl") {
+                if (taxonomy == "CL") {
                     tb.value = Displayed_Cl.length ? Displayed_Cl : CL_PLACEHOLDER;
                 } else if (taxonomy == "PPS") {
                     tb.value = Displayed_PPS.length ? Displayed_PPS : "Pathway Subcode";
@@ -90,8 +90,23 @@
                     tb.value = Displayed_MD.length ? Displayed_MD : MD_PLACEHOLDER;
                 } else if (taxonomy == "CF") {
                     tb.value = Displayed_CF.length ? Displayed_CF.join(" / ") : CF_PLACEHOLDER;
-                } else if (taxonomy == "Modaliity") {
+                } else if (taxonomy == "MODALITY") {
                     tb.value = Displayed_Modality.length ? Displayed_Modality : MODALITY_PLACEHOLDER;
+                } else if (taxonomy == "SUPPLEMENTALINFO") {
+                    let finalText = "TSRT9";
+
+                    let Cl = Displayed_Cl.length ? Displayed_Cl : CL_PLACEHOLDER;
+                    let PPS = Displayed_PPS.length ? Displayed_PPS : PS_PLACEHOLDER;
+                    let APS = Displayed_APS.length ? Displayed_APS.join(" / ") : "";
+                    let MD = Displayed_MD.length ? Displayed_MD : MD_PLACEHOLDER;
+                    let CF = Displayed_CF.length ? Displayed_CF.join(" / ") : CF_PLACEHOLDER;
+                    let Modality = Displayed_Modality.length ? Displayed_Modality : MODALITY_PLACEHOLDER;
+
+                    if (APS.length == 0) {
+                        tb.value = ["TSRT9"].concat([Cl], [PPS], [MD], [CF], [Modality]).join(" / ");
+                    } else {
+                        tb.value = ["TSRT9"].concat([Cl], [PPS], [APS], [MD], [CF], [Modality]).join(" / ");
+                    }
                 }
             {% else %}
                 let finalText = "TSRT9";
@@ -114,13 +129,15 @@
         function showInstructions() {
             document.getElementById("taxonomyMenu").style.display = 'none';
             const menu = document.getElementById("taxonomyMenuSingle");
-            menu.innerHTML = `<h3>Instructions:</h3>
-            <p>1. Start by clicking the "Severity Level" button to select the appropriate severity (only one is able to be selected)<br>
-                2. Continue to the "Pathway Codes" section and select all options that apply<br>
-                3. Proceed to the "Method of Detection" and make the appropriate selection (only one is able to be selected)<br>
-                4. Next, open the "Causative Factors" section and tick all applicable factors<br>
-                5. Once all sections are complete, the assembled incident code will appear in the box above<br>
-                6. To begin again, click the "Reset" button to reset all selections and start fresh</p>`;
+            menu.innerHTML = `<h3 style="margin-top: 0">Instructions:</h3>
+            <p>1. Start by clicking the "Classification" button to select the appropriate severity level (only one is able to be selected)<br>
+                2. Continue to "Primary Pathway Subcode" section and select the primary section of the pathway in which this occured<br>
+                3. If more subcodes apply, please select "Additional Pathway Subcodes" and select all that apply<br>
+                4. Proceed to the "Method of Detection" section and select the area of the pathway that resulted in the detection of the incident (only one is able to be selected)<br>
+                5. Next, proceed to the "Contributory Factors" section and select all the factors that apply<br>
+                6. Proceed to the "Modality" section to select the modailty in which this incident occured<br>
+                7. Once all coding sections are complete, the assembled incident code will appear in the box above<br>
+                8. If a comprehensive summary of the incident is needed, go to the "Supplemental Info" section and complete all sections</p>`;
             menu.style.display = 'block';
             if ("{{ singleTaxonomy|default('') }}".trim() === "") {
                 toggleMenuButtons("InstructionsBtn");
@@ -195,8 +212,10 @@
                         button.id = "btn" + code.split(" ").join("");
                         button.classList.add("toggle-button");
                         button.onclick = () => {
-                            insertRemoveCode(code, taxonomy);
-                            toggleButtons(button.id, "taxonomyMenuSingle");
+                            if (otherChecker(description)){
+                                insertRemoveCode(code, taxonomy);
+                                toggleButtons(button.id, "taxonomyMenuSingle");
+                            }
                         }
 
                         const desc = document.createElement("div");
@@ -218,6 +237,8 @@
                 });
         }
 
+        let listenerAdded = false;
+
         function showSupplementalOptions() {
             document.getElementById("taxonomyMenu").style.display = 'none';
             const menu = document.getElementById("taxonomyMenuSingle");
@@ -227,16 +248,76 @@
                 toggleMenuButtons("SupplementalBtn");
             };
 
+            SupplementalInfo_Dict.equipmentRelatedInformation = SupplementalInfo_Dict.equipmentRelatedInformation.filter(
+                item => !(item[0] === "" && item[1] === "" && item[2] === "")
+                );
+
+            let fetchString = "";
+
+            if (Displayed_CF.length == 0 && Displayed_MD.length == 0) {
+                fetchString = `/api/supplementalinfo/${Object.keys(SupplementalInfo_Dict.equipmentRelatedInformation).length + 1}`
+            } else if (Displayed_MD.length == 0) {
+                fetchString = `/api/supplementalinfo/` + Displayed_CF.join("/") + `/${Object.keys(SupplementalInfo_Dict.equipmentRelatedInformation).length + 1}`
+            } else if (Displayed_CF.length == 0) {
+                fetchString = `/api/supplementalinfo/${Displayed_MD}/${Object.keys(SupplementalInfo_Dict.equipmentRelatedInformation).length + 1}`
+            } else {
+                fetchString = `/api/supplementalinfo/` + Displayed_CF.join("/") + `/${Displayed_MD}/${Object.keys(SupplementalInfo_Dict.equipmentRelatedInformation).length + 1}`
+            }
+
             // Loading data for anatomical sites and then loading all other information
-            fetch(`/api/supplementalinfo`)
-                .then(response => response.text())
-                .then(html => {
+            fetch(fetchString)
+            .then(response => response.text())
+            .then(html => {
                 menu.innerHTML = html;
-                })
-                .catch(error => {
+
+                // Re-execute any <script> tags
+                Array.from(menu.querySelectorAll("script")).forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    oldScript.replaceWith(newScript);
+                });
+
+                return new Promise(resolve => setTimeout(resolve, 0));  // wait for DOM update
+            })
+            .then(() => {
+                const event = new CustomEvent("widgetContentLoaded", {
+                    detail: { section: "supplementalinfo" }
+                });
+
+                const target = document.getElementById("SupplementInfoWindow");
+                if (target) {
+                    target.dispatchEvent(event);
+                } else {
+                    console.error("SupplementInfoWindow not found after fetch");
+                }
+            })
+            .then(() => {
+                if (!listenerAdded) {
+                    listenerAdded = true;
+
+                    window.addEventListener("message", function(event) {
+                        if (event.data && event.data.action === "taxonomyUpdated") {
+                        const iframe = document.getElementById("precedingDetectionPoints");
+                        // Send a message to the widget requesting its value
+                        iframe.contentWindow.postMessage({ action: "getCode" }, "*");
+                        } else if (event.data && event.data.action === "sendCode") {
+                        if (event.data.value.includes("Error")) {
+                            SupplementalInfo_Dict.precedingDetectionPoints = [];
+                        } else {
+                            SupplementalInfo_Dict.precedingDetectionPoints = event.data.value.split(" / ");
+                        }
+                        }
+                    });
+                }
+            })
+            .catch(error => {
                 menu.innerHTML = "Failed to load supplemental information fields.";
                 console.error(error);
-                });
+            });
         }
 
         function copyToClipboard(){
@@ -259,7 +340,7 @@
             }
         }
 
-        function insertRemoveCode(code, taxonomy, addBool = true) {
+        function insertRemoveCode(code, taxonomy, addBool = true, description = "") {
             const tb = document.getElementById("mainTextBox");
             let tbList = tb.value.split(" / ");
 
@@ -290,8 +371,18 @@
             } else if (taxonomy == "CF") {
                 if (addBool) {
                     Displayed_CF = sortCodes([...new Set(Displayed_CF.concat(code))]);
+
+                    SupplementalInfo_Dict.CFdescription[code] = "";
+
+                    {% if not singleTaxonomy %}
+                        document.getElementById("SupplementalBtn").classList.remove("menu-button-complete");
+                    {% endif %}
                 } else {
                     const index = Displayed_CF.indexOf(code);
+
+                    if (SupplementalInfo_Dict.CFdescription[code]){
+                        delete SupplementalInfo_Dict.CFdescription[code];
+                    }
 
                     if (index != -1) {
                         Displayed_CF.splice(index, 1);
@@ -316,19 +407,24 @@
 
             let api = "";
             let displayPlaceholder = "";
+            let instructions = "";
 
             if (taxonomy == "PPS"){
                 api = "pathwaysubcodes"
                 displayPlaceholder = "Pathway Subcodes"
+                instructions = `Please carefully look through each record and the primary area in the patient pathway in which this incident occured. Only one subcode is able to be selected. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the subcode selected.`
             } else if (taxonomy == "APS"){
                 api = "pathwaysubcodes"
                 displayPlaceholder = "Pathway Subcodes"
+                instructions = `Please carefully look through each record and select one or more pathway subcodes that best describe the process or pathway involved. You're welcome to choose multiple subcodes if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
             } else if (taxonomy == "MD"){
                 api = "pathwaysubcodes"
                 displayPlaceholder = "Pathway Subcodes"
+                instructions = `Please carefully look through each record and the primary area in the patient pathway that detected this incident. Only one subcode is able to be selected. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
             } else if (taxonomy == "CF"){
                 api = "contributoryfactors"
                 displayPlaceholder = "Contributory Factors"
+                instructions = `Please carefully look through each record and select one or more contributory factors that best represent what lead to the incident. You're welcome to choose multiple factors if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
             }
 
             menu.innerHTML = `Loading ${api} Categories`;
@@ -341,7 +437,6 @@
                     menu.innerHTML = '';
 
                     // Placing instructions if this is loaded in single taxonomy
-                    instructions = `Please carefully look through each record and select one or more ${displayPlaceholder.toLowerCase()} that best describe the process or pathway involved. You're welcome to choose multiple codes if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
                     singleTaxonomyInstructions(instructions);
 
                     Object.entries(data).forEach((category) => {
@@ -365,6 +460,17 @@
                     menu.innerHTML = `<p style="color:red;">Failed to load ${displayPlaceholder.toLowerCase()}.</p>`;
                     console.error(err);
                 });
+        }
+
+        function otherChecker(description) {
+            if (description.split(" ")[0].toLowerCase().trim() == "other") {
+                otherCheck = confirm("You have selected a code corresponding to 'Other', would you like to select a more specific code?");
+
+                if (otherCheck) {
+                    return false;
+                }
+            }
+            return true
         }
 
         function displayCategory(category, taxonomy){
@@ -414,8 +520,10 @@
                             button.classList.add("toggle-button");
                             button.id = "btn" + code;
                             button.onclick = () => {
-                                insertRemoveCode(taxonomy == "MD" ? "MD" + code : code, taxonomy);
-                                toggleButtons(button.id, "rightContent");
+                                if (otherChecker(label)){
+                                    insertRemoveCode(taxonomy == "MD" ? "MD" + code : code, taxonomy);
+                                    toggleButtons(button.id, "rightContent");
+                                }
                             }
 
                             const buttonLabel = document.createElement("label");
@@ -444,7 +552,13 @@
                             if ("{{ singleTaxonomy|default('') }}".trim() != ""){
                                 checkbox.checked = document.getElementById("mainTextBox").value.includes(code);
                             }
-                            checkbox.onchange = () => insertRemoveCode(code, taxonomy, checkbox.checked);
+                            checkbox.onchange = () => {
+                                if (otherChecker(label)) {
+                                    insertRemoveCode(code, taxonomy, checkbox.checked)
+                                } else {
+                                    checkbox.checked = false;
+                                }
+                            };
 
                             const checkboxLabel = document.createElement("label");
                             checkboxLabel.htmlFor = checkbox.id;
@@ -534,10 +648,10 @@
                     Modality: [MODALITY_PLACEHOLDER, "ModalityBtn"]
                 };
 
-                if (tbString.split(" / ")[2] == PS_PLACEHOLDER){
-                    document.getElementById("APSBtn").disabled == true;
+                if (tbString.split(" / ").includes(PS_PLACEHOLDER)){
+                    document.getElementById("APSBtn").disabled = true;
                 } else{
-                    document.getElementById("APSBtn").disabled == false;
+                    document.getElementById("APSBtn").disabled = false;
                 }
 
                 Object.entries(sections).forEach(([taxonomy, [placeholder, btnID]]) => {
@@ -572,18 +686,22 @@
 
             SupplementalInfo_Dict = {
                 anatomicalSite: "",
-                prescribedDose: -1,
-                fractionation: -1,
-                intendedExposure: -1,
-                intendedExposure: -1,
-                geographicMisplacement: -1,
+                prescribedDose: 0,
+                fractionation: 0,
+                intendedExposure: 0,
+                actualExposure: 0,
+                geographicMisplacement: 0,
                 CFdescription: {},
                 detection: "",
                 precedingDetectionPoints: [],
                 patientImplications: "",
                 correctiveActions: "",
-                equipmentRelatedInformation: {}
+                equipmentRelatedInformation: []
             };
+
+            Displayed_CF.forEach(cf => {
+                SupplementalInfo_Dict.CFdescription[cf] = "";
+            });
             
             UpdateTextbox();
             updateMenuButtonStatus();
@@ -591,9 +709,108 @@
 
         window.addEventListener("message", function(event) {
             // Optionally, validate event.origin here.
-            if (event.data && event.data.action === "getValue") {
+            if (event.data && event.data.action === "getCodeUnchecked") {
                 const value = document.getElementById("mainTextBox").value;
-                window.parent.postMessage({ action: "sendValue", value: value }, "*");
+                window.parent.postMessage({ action: "sendCodeUnchecked", value: value }, "*");
+            } else if (event.data && event.data.action === "getCode") {
+                let pass = true;
+                const tbList = document.getElementById("mainTextBox").value.split(" / ");
+
+                const placeholders = [CL_PLACEHOLDER, PS_PLACEHOLDER, MD_PLACEHOLDER, CF_PLACEHOLDER, MODALITY_PLACEHOLDER, "Pathway Subcode"];
+
+                for (let i = 0; i < placeholders.length; i++) {
+                    if (tbList.includes(placeholders[i])) {
+                        pass = false;
+                        break;
+                    }
+                }
+
+                if (pass) {
+                    window.parent.postMessage({ action: "sendCode", value: tbList.join(" / ") }, "*");
+                } else {
+                    window.parent.postMessage({ action: "sendCode", value: "Error: Missing required fields." }, "*");
+                }
+            } else if (event.data && event.data.action === "getInfo") {
+                let pass = true;
+                /*
+                for (let key in SupplementalInfo_Dict) {
+                    var value = SupplementalInfo_Dict[key];
+                    
+                    if (key === "anatomicalSite" && value === "") {
+                        pass = false;
+                        break;
+                    } else if (key === "prescribedDose" && !isNumeric(value)) {
+                        pass = false;
+                        break;
+                    } else if (key === "fractionation" && !isNumeric(value)) {
+                        pass = false;
+                        break;
+                    } else if (key === "intendedExposure" && !isNumeric(value)) {
+                        pass = false;
+                        break;
+                    } else if (key === "actualExposure" && !isNumeric(value)) {
+                        pass = false;
+                        break;
+                    } else if (key === "geographicMisplacement" && !isNumeric(value)) {
+                        pass = false;
+                        break;
+                    } else if (key === "CFdescription" && Object.keys(value).length === 0) {
+                        pass = false;
+                        break;
+                    } else if (key === "detection" && value === "") {
+                        pass = false;
+                        break;
+                    } else if (key === "precedingDetectionPoints" && value.length === 0) {
+                        pass = false;
+                        break;
+                    } else if (key === "patientImplications" && value === "") {
+                        pass = false;
+                        break;
+                    } else if (key === "correctiveActions" && value === "") {
+                        pass = false;
+                        break;
+                    } else if (key === "equipmentRelatedInformation" && Object.keys(value).length === 0) {
+                        pass = false;
+                        break;
+                    }
+                    
+                }
+                */
+                if (pass) {
+
+                    let infotext = "Supplemental Information:\n";
+                    infotext += `Anatomical Site: ${SupplementalInfo_Dict.anatomicalSite}\n`;
+                    infotext += `Prescribed Dose: ${SupplementalInfo_Dict.prescribedDose}Gy\n`;
+                    infotext += `Fractionation: ${SupplementalInfo_Dict.fractionation}#\n`;
+                    infotext += `Intended Exposure: ${SupplementalInfo_Dict.intendedExposure}Gy\n`;
+                    infotext += `Actual Exposure: ${SupplementalInfo_Dict.actualExposure}Gy\n`;
+                    infotext += `Geographic Misplacement: ${SupplementalInfo_Dict.geographicMisplacement}mm\n`;
+                    if (SupplementalInfo_Dict.CFdescription.length > 0) {
+                        infotext += `\nContributory Factors:\n`;
+                    }
+                    for (const [key, value] of Object.entries(SupplementalInfo_Dict.CFdescription)) {
+                        infotext += `\t${key}: ${value}\n`;
+                    }
+                    infotext += `\nDetection: ${SupplementalInfo_Dict.detection}\n`;
+                    infotext += `\nPreceding Detection Points: ${SupplementalInfo_Dict.precedingDetectionPoints.join(", ")}\n`;
+                    infotext += `\nPatient Implications: ${SupplementalInfo_Dict.patientImplications}\n`;
+                    infotext += `\nCorrective Actions: ${SupplementalInfo_Dict.correctiveActions}\n`;
+                    if (SupplementalInfo_Dict.equipmentRelatedInformation.length > 0) {
+                        infotext += `\nEquipment Related Information:\n`;
+                    }
+
+                    let temDict = SupplementalInfo_Dict.equipmentRelatedInformation.filter(
+                        item => !(item[0] === "" && item[1] === "" && item[2] === "")
+                        );
+
+                    temDict.forEach(([serialNo, type, malfunction], index) => {
+                        infotext += `\t${serialNo} - ${type}: ${malfunction}\n`;
+                    });
+
+                    window.parent.postMessage({ action: "sendInfo", value: infotext }, "*");
+                } else {
+                    window.parent.postMessage({ action: "sendInfo", value: "Error: Missing required fields." }, "*");
+                }
             }
         });
 
@@ -601,6 +818,7 @@
             // Directly call clearText to set the correct taxonomies
             clearText();
             toggleMenuButtons("");
+            updateMenuButtonStatus();
 
             var singleTax = "{{ singleTaxonomy|default('') }}".toUpperCase();
             if (singleTax) {
@@ -608,6 +826,8 @@
                     showSingleScreenOptions(singleTax.charAt(0).toUpperCase() + singleTax.slice(1).toLowerCase())
                 } else if (["PPS", "APS", "MD", "CF"].includes(singleTax)){
                     showMultiScreenOptions(singleTax);
+                } else if (singleTax == "SUPPLEMENTALINFO") {
+                    showSupplementalOptions();
                 }
             }
             else {

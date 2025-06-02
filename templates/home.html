@@ -48,21 +48,30 @@
             <iframe id="widgetIframe" src="/widget"></iframe>
         {% endif %}
         <br>
-        <button onclick="requestValueFromWidget()" class="copy-button">Copy</button>
-        <p>To copy the code to your clipboard, simply click on the displayed copy button<br></p>
+        <button onclick="requestCodeFromWidget()" class="copy-button">Copy Code</button>
+        <button onclick="requestInfoFromWidget()" class="copy-button">Copy Info</button>
+        <p>To copy the code to your clipboard, simply click on the displayed copy button</p><br>
         <input type="button" value="Feedback Form" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdzvE2fIhrAjYww1oQqb45hb0GNT-_wDDvQ7GWrh6M9XQeJSg/viewform?usp=dialog')" /><br><br>
         <button onclick="window.location.href='/webdeveloperinformation';">Web developer information</button>
     </div>
     <script>
-        function requestValueFromWidget() {
+        function requestCodeFromWidget() {
             const iframe = document.getElementById("widgetIframe");
             // Send a message to the widget requesting its value
-            iframe.contentWindow.postMessage({ action: "getValue" }, "*");
+            iframe.contentWindow.postMessage({ action: "getCode" }, "*");
+        }
+
+        function requestInfoFromWidget() {
+            const iframe = document.getElementById("widgetIframe");
+            // Send a message to the widget requesting its value
+            iframe.contentWindow.postMessage({ action: "getInfo" }, "*");
         }
         
         window.addEventListener("message", function(event) {
             // Validate event.origin here in a production app for security.
-            if (event.data && event.data.action === "sendValue") {
+            if (event.data && event.data.action === "sendCode") {
+                navigator.clipboard.writeText(event.data.value);
+            } else if (event.data && event.data.action === "sendInfo") {
                 navigator.clipboard.writeText(event.data.value);
             }
         });

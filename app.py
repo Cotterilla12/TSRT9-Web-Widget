@@ -117,6 +117,21 @@ contributoryFactors = LoadData("Contributory Factors.csv")
 classifications = LoadData("Classification.csv", 2)
 modalities = LoadData("Modality.csv", 2)
 
+def description(knownCode):
+    for key in pathwaySubcodes.keys():
+        tempDict = pathwaySubcodes[key]
+        for code in tempDict.keys():
+            if code == knownCode:
+                return tempDict[code]
+    
+    for key in contributoryFactors.keys():
+        tempDict = contributoryFactors[key]
+        for code in tempDict.keys():
+            if code == knownCode:
+                return tempDict[code]
+    
+    return ""
+
 app = Flask(__name__)
 
 @app.after_request
@@ -147,13 +162,28 @@ def api_causative(category):
         return jsonify(sorted(list(contributoryFactors.keys()), key = lambda x: int(x[2])))
     return jsonify(contributoryFactors[category])
 
-@app.route("/api/supplementalinfo")
-def api_supplementainfo():
-    supplementalDict = request.args.get("supplementalDict", "")
+@app.route("/api/supplementalinfo/<path:renderInfo>")
+def api_supplementainfo(renderInfo):
+    renderInfo = renderInfo.split("/")
 
-    sites = jsonify(pd.read_csv("data/Sites.csv").values.tolist())
+    sites = [item[0] for item in pd.read_csv("data/Sites.csv").values.tolist()]
 
-    return render_template("supplementalinfo.html", supplementalDict=supplementalDict, sites=sites)
+    if len(renderInfo) == 1:
+        return render_template("supplementalinfo.html", sites=sites, equipMalfunctions = int(renderInfo[0]))
+    
+    cfDict = {}
+    mdDict = {}
+    for code in renderInfo[:-1]:
+        searchCode = code
+
+        if searchCode[0:2] == "MD":
+            searchCode = searchCode[2:]
+            mdDict[code] = description(searchCode)
+            continue
+        
+        cfDict[searchCode] = description(searchCode)
+    
+    return render_template("supplementalinfo.html", sites=sites, equipMalfunctions = int(renderInfo[-1]), cfDict = cfDict, mdDict = mdDict)
 
 @app.route("/api/modality")
 def api_modality():
@@ -181,6 +211,11 @@ def widget(code = ""):
 def widgetSingle(taxonomy, code=""):
     code = code.replace(" ", "")
     CL, PPS, APS, MD, CFs, Modality = SanatiseCodes(code)
+
+    if taxonomy == "APS":
+        APS.extend(PPS)
+        PPS = []
+
     return render_template("widget.html", singleTaxonomy=taxonomy,
                            ClTaxonomy=CL, PPSTaxonomy=PPS, APSTaxonomy=APS, MDTaxonomy=MD, CFTaxonomy=CFs, modalityTaxonomy = Modality)
 

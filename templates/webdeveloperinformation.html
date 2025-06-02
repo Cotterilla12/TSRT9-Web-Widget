@@ -28,8 +28,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 120px;
-            height: 40px;
             font-size: 1.2rem;
             margin: 10px auto;
             border: 2px solid #000;
@@ -57,77 +55,97 @@
         <h2>Embedding with Single Taxonomy</h2>
         <p>Embed the widget displaying only one taxonomy by choosing one of the following:</p>
         
-        <strong>Classification (Cl):</strong>
+        <strong>Classification (cl):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/Cl" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/cl" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
         <iframe src="/widget/Cl" width="90%" height="400"></iframe>
 
-        <strong>Primary Pathway Subcode (PPS):</strong>
+        <strong>Primary Pathway Subcode (pps):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/PPS" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/pps" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
         <iframe src="/widget/PPS" width="90%" height="400"></iframe>
 
-        <strong>Pathway Subcodes (APS):</strong>
+        <strong>Pathway Subcodes (aps):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/APS" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/aps" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
         <iframe src="/widget/APS" width="90%" height="400"></iframe>
 
-        <strong>Method of Detection (MD):</strong>
+        <strong>Method of Detection (md):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/MD" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/md" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
         <iframe src="/widget/MD" width="90%" height="400"></iframe>
 
-        <strong>Contributory Factors (CF):</strong>
+        <strong>Contributory Factors (cf):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/CF" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/cf" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
         <iframe src="/widget/CF" width="90%" height="400"></iframe>
 
-        <strong>Modality (Modality):</strong>
+        <strong>Modality (modality):</strong>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/Modality" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/modality" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
         <iframe src="/widget/Modality" width="90%" height="400"></iframe>
 
+        <strong>Supplemental Information (supplementalinfo):</strong><br>
+        <p>Note: This one will need to be loaded in with an error code to be completely rendered, as discussed in the next section</p>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/supplementalinfo" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/supplementalinfo" width="90%" height="400"></iframe>
+
         <h2>Embedding with Existing Error Code</h2>
         <p>Embed the widget preloaded with an existing TSRT9 error code (Example: TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e):</p>
         <p><strong>Note:</strong> It does not matter whether it is loaded as "TSRT9/*" or "TSRT9 /*", as well as there being spaces between the codes as these are all stripped as part of identification. In this scenario, pressing "Reset" will reset the interface to the submitted code rather than to an empty state. The user can still edit the result, but each entry will need to be manually removed.</p>
         <h3>Code Sanitisation:</h3>
-        <p>When embedding with existing error codes, the widget sanitises each entered code, ensuring it matches a known taxonomy code exactly. Non-matching codes, as well as ones from the wrong taxonomies, will simply be ignored. Duplicate entries of the same code are accepted but only appear once. If multiple different SL or MD codes are submitted, neither will be shown.</p>
-        <p><strong>Note:</strong> For 'Severity Level' (SL) and 'Method of Detection' (MD), only one selection is allowed regardless of widget load.</p>
+        <p>When embedding with existing error codes, the widget sanitises each entered code, ensuring it matches a known taxonomy code exactly. Non-matching codes, as well as ones from the wrong taxonomies, will simply be ignored. Duplicate entries of the same code are accepted but only appear once. If multiple different classifications or MD codes are submitted, neither will be shown.</p>
+        <p><strong>Note 1:</strong> For 'Classification' (cl), 'Primary Pathway Subcode' (pps), 'Method of Detection' (MD), and 'Modality' (modality), only one selection is allowed regardless of widget load.</p>
+        <p><strong>Note 2:</strong> The primary pathway subcode is simply the first valid subcode presented in the url.</p>
         <h3>Sanitisation Examples:</h3>
         <p><strong>Example 1:</strong> A completely valid error code.</p>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF5a / CF5d / CF5e / D07" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
-        <iframe src="/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF 5a / CF 5d / CF 5e" width="90%" height="400"></iframe>
+        <iframe src="/widget/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF5a / CF5d / CF5e / D07" width="90%" height="400"></iframe>
 
-        <p><strong>Example 2:</strong> A scenario where the code includes valid entries, an invalid code, and duplicated SL and MD entries. Duplicates are fine as long as they are the same value, and will only be included once in the final string. If multiple different SL or MD values are submitted, none will be used.</p>
+        <p><strong>Example 2:</strong> Supplemental info loaded in with full taxonomy.</p>
+        <code>
+&lt;iframe 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/supplementalinfo/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF5a / CF5d / CF5e / D07" 
+    width="90%" height="400"&gt;
+&lt;/iframe&gt;
+        </code>
+        <iframe src="/widget/supplementalinfo/TSRT9 / Level 2 / 3c / 3f / 3h / 3j / MD2g / CF5a / CF5d / CF5e / D07" width="90%" height="400"></iframe>
+
+        <p><strong>Example 3:</strong> A scenario where the code includes valid entries, an invalid code, and duplicated classification and MD entries. Duplicates are fine as long as they are the same value, and will only be included once in the final string. If multiple different classifications or MD values are submitted, none will be used.</p>
         <code>
 &lt;iframe 
     src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / junk / Level 1 / 0a / MD0a / CF404 / CF 1a / Level 1 / MD0a" 
@@ -136,25 +154,25 @@
         </code>
         <iframe src="/widget/TSRT9 / junk / Level 1 / 0a / MD0a / CF404 / CF 1a / Level 1 / MD0a" width="90%" height="400"></iframe>
 
-        <p><strong>Example 3:</strong> A scenario with one valid SL, two different MD codes, a valid PC and CF, and some junk. Since MD only allows one selection, both MD values are ignored. The rest of the valid codes are included. Junk is ignored.</p>
+        <p><strong>Example 4:</strong> A scenario with one valid classification, two different MD codes, a valid pathway subcode and CF, and some junk. Since MD only allows one selection, both MD values are ignored. The rest of the valid codes are included. Junk is ignored.</p>
         <code>
 &lt;iframe 
     src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / Level 1 / 0a / MD0a / MD0b / CF 1a / nonsense123" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
-        <iframe id="widgetIframePC" src="/widget/TSRT9 / Level 1 / 0a / MD0a / MD0b / CF 1a / nonsense123" width="90%" height="400"></iframe>
+        <iframe src="/widget/TSRT9 / Level 1 / 0a / MD0a / MD0b / CF 1a / nonsense123" width="90%" height="400"></iframe>
 
-        <p><strong>Example 4:</strong> A scenario with a single taxonomy selected, pathway codes (PC) in this case, and a full error code presented with some junk added. Only the relevant codes will appear.</p>
+        <p><strong>Example 5:</strong> A scenario with a single taxonomy selected, 'aps' in this case, and a full error code presented with some junk added. Only the relevant codes will appear.</p>
         <code>
 &lt;iframe 
-    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/PC/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" 
+    src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/APS/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" 
     width="90%" height="400"&gt;
 &lt;/iframe&gt;
         </code>
-        <iframe id="widgetIframePC" src="/widget/APS/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" width="90%" height="400"></iframe>
+        <iframe src="/widget/APS/TSRT9 / Level 1 / 0a / 12c / 12d / Nonesence / MD0a / CF 1a / Hello World! / CF 4b / CF 4c / CF 5b" width="90%" height="400"></iframe>
         
-        <p><strong>Example 5:</strong> Due to overzealous matching, the code can be completely shuffled and mangled with spaces. All of the codes will appear in the right order.</p>
+        <p><strong>Example 6:</strong> Due to overzealous matching, the code can be completely shuffled and mangled with spaces. All of the codes will appear in the right order.</p>
         <code>
 &lt;iframe 
     src="https://tsrt9-code-generator-997649074508.europe-west2.run.app/widget/TSRT9 / CF 5e / 1 d / CF3 b  / 0a / CF 5b / 9g / CF 1 a / 9i / Level1 / 1b / 9d / C F 5d / 16 f / M D 7c / CF3c / CF 3a / 16d" 
@@ -173,8 +191,16 @@ function requestValueFromWidget(iframeID) {
     iframe.contentWindow.postMessage({ action: "getValue" }, "*");
 }
 
+function requestInfoFromWidget(iframeID) {
+    const iframe = document.getElementById(iframeID);
+    iframe.contentWindow.postMessage({ action: "getInfo" }, "*");
+}
+
 window.addEventListener("message", function(event) {
     if (event.data && event.data.action === "sendValue") {
+        console.log("Widget Value:", event.data.value);
+        navigator.clipboard.writeText(event.data.value);
+    } else if (event.data && event.data.action === "sendInfo") {
         console.log("Widget Value:", event.data.value);
         navigator.clipboard.writeText(event.data.value);
     }
@@ -186,6 +212,10 @@ window.addEventListener("message", function(event) {
 
         <button class="copy-button" onclick="requestValueFromWidget('widgetIframePC')">Copy Code</button>
 
+        <p>The button below demonstrates retrieving the supplemental information from the final embedded widget above:</p>
+
+        <button class="copy-button" onclick="requestInfoFromWidget('widgetIframePC')">Copy Info</button>
+
         <p>Thank you for taking the time to review this widget documentation.<br>
             If you have suggestions for improvements, corrections, or would like to contribute enhancements,<br>
             please find me at:<br>
@@ -194,17 +224,25 @@ window.addEventListener("message", function(event) {
         <button onclick="window.location.href='{{ url_for('home') }}';">Return Home</button>
     </div>
     <script>
-    function requestValueFromWidget(iframeID) {
-        const iframe = document.getElementById(iframeID);
-        iframe.contentWindow.postMessage({ action: "getValue" }, "*");
-    }
-
-    window.addEventListener("message", function(event) {
-        if (event.data && event.data.action === "sendValue") {
-            console.log("Widget Value:", event.data.value);
-            navigator.clipboard.writeText(event.data.value);
+        function requestValueFromWidget(iframeID) {
+            const iframe = document.getElementById(iframeID);
+            iframe.contentWindow.postMessage({ action: "getValue" }, "*");
         }
-    });
+
+        function requestInfoFromWidget(iframeID) {
+            const iframe = document.getElementById(iframeID);
+            iframe.contentWindow.postMessage({ action: "getInfo" }, "*");
+        }
+
+        window.addEventListener("message", function(event) {
+            if (event.data && event.data.action === "sendValue") {
+                console.log("Widget Value:", event.data.value);
+                navigator.clipboard.writeText(event.data.value);
+            } else if (event.data && event.data.action === "sendInfo") {
+                console.log("Widget Value:", event.data.value);
+                navigator.clipboard.writeText(event.data.value);
+            }
+        });
     </script>
 </body>
 </html>

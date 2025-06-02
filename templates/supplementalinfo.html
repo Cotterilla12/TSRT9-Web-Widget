@@ -6,125 +6,297 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='stylesupplemental.css') }}">
 </head>
 <body>
-<div class="taxonomy-container">
-  <div id="taxonomyMenuSingle">
-    <div class="entry-div">
-      <label>Anatomical Site: </label>
-      <select id="anatomicalSite">
-        <option value=""></option>
-        <option value="Axilla">Axilla</option>
-        <option value="Bladder">Bladder</option>
-        <option value="Brain">Brain</option>
-        <option value="Breast">Breast</option>
-        <option value="Cervix">Cervix</option>
-        <option value="Endometrium">Endometrium</option>
-        <option value="Head &amp; neck">Head &amp; neck</option>
-        <option value="Lung">Lung</option>
-        <option value="Oesophagus">Oesophagus</option>
-        <option value="Prostate">Prostate</option>
-        <option value="Prostate and Nodes">Prostate and Nodes</option>
-        <option value="Skin">Skin</option>
-        <option value="Spine">Spine</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
+<div class="taxonomy-container" id="SupplementInfoWindow">
+  <div class="entry-div">
+    <label>Anatomical Site: </label>
+    <select id="anatomicalSite" onchange="UpdateInformationSingleKey('anatomicalSite', this.value)">
+      <option value=""></option>
+      {% for site in sites %}
+        <option value="{{ site }}">{{ site }}</option>
+      {% endfor %}
+    </select>
+  </div>
 
-    <div class="entry-div">
-      <label>Prescribed Dose: </label>
-      <input type="number" id="prescribedDose" min="0">
-      <label>Gy</label>
-    </div>
+  <div class="entry-div">
+    <label>Prescribed Dose: </label>
+    <input type="number" id="prescribedDose" min="0" onchange="UpdateInformationSingleKey('prescribedDose', this.value)">
+    <label>Gy</label>
+  </div>
 
-    <div class="entry-div">
-      <label>Fractionation: </label>
-      <input type="number" id="fractionation" min="0">
-      <label>#</label>
-    </div>
+  <div class="entry-div">
+    <label>Fractionation: </label>
+    <input type="number" id="fractionation" min="0" onchange="UpdateInformationSingleKey('fractionation', this.value)">
+    <label>#</label>
+  </div>
 
-    <div class="entry-div">
-      <label>Intended Exposure: </label>
-      <input type="number" id="intendedExposure" min="0">
-      <label>Gy</label>
-    </div>
+  <div class="entry-div">
+    <label>Intended Exposure: </label>
+    <input type="number" id="intendedExposure" min="0" onchange="UpdateInformationSingleKey('intendedExposure', this.value)">
+    <label>Gy</label>
+  </div>
 
-    <div class="entry-div">
-      <label>Actual Exposure: </label>
-      <input type="number" id="actualExposure" min="0">
-      <label>Gy</label>
-    </div>
+  <div class="entry-div">
+    <label>Actual Exposure: </label>
+    <input type="number" id="actualExposure" min="0" onchange="UpdateInformationSingleKey('actualExposure', this.value)">
+    <label>Gy</label>
+  </div>
 
-    <div class="entry-div">
-      <label>Geographic Misplacement: </label>
-      <input type="number" id="geographicMisplacement" min="0">
-      <label>mm</label>
-    </div>
+  <div class="entry-div">
+    <label>Geographic Misplacement: </label>
+    <input type="number" id="geographicMisplacement" min="0" onchange="UpdateInformationSingleKey('geographicMisplacement', this.value)">
+    <label>mm</label>
+  </div>
 
-    <br>
+  <br>
 
-    <div class="entry-div-top">
-      <label>Description of each contributory Factor:</label>
-    </div>
+  <div class="entry-div-top">
+    <label>Description of each contributory Factor:</label>
+  </div>
 
-    <div class="entry-div-cf">
-      <label>CF5a: </label>
-      <input type="text" id="CF5aDesc">
-    </div>
+  <div>
+    {% if cfDict %}
+      {% for key, value in cfDict.items() %}
+        <div class = entry-div-cf>
+          <label>{{key}}: {{value}}</label>
+          <textarea id="{{key}}Desc" rows="2" onchange="UpdateInformationDoubleKey('CFdescription', '{{key}}', this.value)"></textarea>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class = entry-div>
+          <label><strong style="color: red;">No contributory factors selected</strong></label>
+      </div>
+    {% endif %}
+  </div>
 
-    <div class="entry-div-cf">
-      <label>CF5d: </label>
-      <input type="text" id="CF5dDesc">
-    </div>
+  <br>
 
-    <div class="entry-div-cf">
-      <label>CF5e: </label>
-      <input type="text" id="CF5eDesc">
-    </div>
+  <div class="entry-div-top">
+    <label>Describe how the issue was detected: </label>
+  </div>
 
-    <br>
+  <div>
+    {% if mdDict %}
+      <div class = entry-div>
+        {% for key, value in mdDict.items() %}
+            <label>{{key}}: {{value}}</label>
+        {% endfor %}
+        <textarea id="detection" rows="4" onchange="UpdateInformationSingleKey('detection', this.value)"></textarea>
+      </div>
+    {% else %}
+      <div class = entry-div>
+          <label><strong style="color: red;">No method of detection selected</strong></label>
+      </div>
+    {% endif %}
+  </div>
 
-    <div class="entry-div">
-      <label>Describe how the issue was detected: </label>
-      <textarea id="detection" rows="4"></textarea>
-    </div>
+  <br>
 
-    <br>
+  <div class="entry-div-top">
+    <label>Select all areas of the pathway where this issue should have been detected:</label>
+  </div>
 
-    <div class="entry-div-top">
-      <label>Select all areas of the pathway where this issue should have been detected:</label>
-    </div>
+  <div class="entry-div-bot">
+    <iframe id="precedingDetectionPoints" src="/widget/APS"></iframe>
+  </div>
 
-    <div class="entry-div-bot">
-      <iframe src="/widget/APS"></iframe>
-    </div>
+  <br>
 
-    <br>
+  <div class="entry-div">
+    <label>Describe the implications experienced by the patient due to this error: </label>
+    <textarea id="patientImplications" rows="4" onchange="UpdateInformationSingleKey('patientImplications', this.value)"></textarea>
+  </div>
 
-    <div class="entry-div">
-      <label>Describe the implications experienced by the patient due to this error: </label>
-      <textarea id="patientImplications" rows="4"></textarea>
-    </div>
+  <br>
 
-    <br>
+  <div class="entry-div">
+    <label>Describe the corrective actions needing to take place: </label>
+    <textarea id="correctiveActions" rows="4" onchange="UpdateInformationSingleKey('correctiveActions', this.value)"></textarea>
+  </div>
 
-    <div class="entry-div">
-      <label>Describe the corrective actions needing to take place: </label>
-      <textarea id="correctiveActions" rows="4"></textarea>
-    </div>
+  <br>
 
-    <br>
+  <div class="entry-div">
+    <label>Equipment related Malfunctions: </label><button onclick="AddMalfunction();">+</button>
+  </div>
 
-    <div class="entry-div-top">
-      <label>Equipment related Malfunctions:</label>
-    </div>
-
-    <div>
-      <div></div>
-      <label>Serial No: </label>
-      <input type="text" id="newSerialNo">
-      <div></div>
-      <label>Equipment Type: </label>
-      <input type="text" id="newEquipmentType">
-    </div>
+  <div id = "equipmentRelatedInformation">
+    {% for i in range(1, equipMalfunctions + 1) %}
+      <div class = "entry-div-cf">
+        <label>Serial No: </label>
+        <input type="text" id="SerialNo{{i}}" onchange="UpdateInformationTripleKey('equipmentRelatedInformation', {{ i - 1 }}, 0, this.value);">
+        <br>
+        <label>Equipment Type: </label>
+        <input type="text" id="EquipmentType{{i}}" onchange="UpdateInformationTripleKey('equipmentRelatedInformation', {{ i - 1 }}, 1, this.value);">
+        <br><br>
+        <label>Describe the malfunction: </label>
+        <textarea id="malfunctionDesc{{i}}" rows="4" onchange="UpdateInformationTripleKey('equipmentRelatedInformation', {{ i - 1 }}, 2, this.value);"></textarea>
+      </div>
+    {% endfor %}
   </div>
 </div>
+<script>
+  document.getElementById("SupplementInfoWindow").addEventListener("widgetContentLoaded", (e) => {
+    for (const [key, value] of Object.entries(SupplementalInfo_Dict)) {
+      if (key == "CFdescription") {
+        {% if cfDict %}
+        for (const [key2, value2] of Object.entries(SupplementalInfo_Dict.CFdescription)) {
+          document.getElementById(key2 + "Desc").value = value2;
+        }
+        {% endif %}
+        continue;
+      } else if (key == "equipmentRelatedInformation") {
+        if (SupplementalInfo_Dict.equipmentRelatedInformation.length == 0) {
+          SupplementalInfo_Dict.equipmentRelatedInformation.push(["", "", ""]);
+        }
+
+        SupplementalInfo_Dict.equipmentRelatedInformation.forEach(([serialNo, type, malfunction], index) => {
+          if (serialNo) { document.getElementById(`SerialNo${index + 1}`).value = serialNo; }
+          if (type) { document.getElementById(`EquipmentType${index + 1}`).value = type; }
+          if (malfunction) { document.getElementById(`malfunctionDesc${index + 1}`).value = malfunction; }
+        });
+        continue;
+      } else if (key == "precedingDetectionPoints") {
+        if (SupplementalInfo_Dict.precedingDetectionPoints.length > 0) {
+          document.getElementById(key).src = `/widget/APS/TSRT9/${SupplementalInfo_Dict.precedingDetectionPoints.join("/")}`;
+        }
+        continue;
+      } {% if not mdDict %}
+        else if (key == "detection") {
+          continue;
+        }
+        {% endif %}
+      document.getElementById(key).value = value;
+    }
+    SetSupplementalMenuButton();
+  });
+
+  function SetSupplementalMenuButton() {
+    let pass = true;
+
+    for (let key in SupplementalInfo_Dict) {
+      var value = SupplementalInfo_Dict[key];
+        
+      if (key == "anatomicalSite" && value == "") {
+        pass = false;
+        break;
+      } else if (key == "prescribedDose" && !isNumeric(value) || value == 0) {
+        pass = false;
+        break;
+      } else if (key == "fractionation" && !isNumeric(value) || value == 0) {
+        pass = false;
+        break;
+      } else if (key == "intendedExposure" && !isNumeric(value) || value == 0) {
+        pass = false;
+        break;
+      } else if (key == "actualExposure" && !isNumeric(value) || value == 0) {
+        pass = false;
+        break;
+      } else if (key == "geographicMisplacement" && !isNumeric(value) || value == 0) {
+        pass = false;
+        break;
+      } else if (key === "CFdescription") {
+        Object.entries(SupplementalInfo_Dict.CFdescription).forEach(([cfKey, cfVal]) => {
+          if (cfVal.trim() === "") {
+            pass = false;
+          }
+        });
+        if (!pass) {
+          break;
+        }
+      } else if (key == "detection" && value == "") {
+        pass = false;
+        break;
+      } else if (key == "precedingDetectionPoints" && value.length == 0) {
+        pass = false;
+        break;
+      } else if (key == "patientImplications" && value == "") {
+        pass = false;
+        break;
+      } else if (key == "correctiveActions" && value == "") {
+        pass = false;
+        break;
+      } else if (key == "equipmentRelatedInformation") {
+        SupplementalInfo_Dict.equipmentRelatedInformation.forEach(([serialNo, type, malfunction], index) => {
+          if ((serialNo == "" || type == "" || malfunction == "") && !(serialNo == "" && type == "" && malfunction == "")) {
+            pass = false;
+          }
+        });
+
+        if (!pass) {
+          break;
+        }
+      }
+    }
+
+    try {
+      if (pass) {
+        document.getElementById("SupplementalBtn").classList.add("menu-button-complete");
+      } else {
+        document.getElementById("SupplementalBtn").classList.remove("menu-button-complete");
+      }
+    } catch (e) {}
+  }
+
+  function setDataField(key) {
+    document.getElementById(key).value = SupplementalInfo_Dict[key];
+  }
+
+  function UpdateInformationSingleKey(key, data) {
+    SupplementalInfo_Dict[key] = data;
+    window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
+
+    try {
+      InstructionsBtn.classList.add("menu-button-complete");
+    } catch (e) {}
+    
+    SetSupplementalMenuButton();
+  }
+
+  function UpdateInformationDoubleKey(key1, key2, data) {
+    SupplementalInfo_Dict[key1][key2] = data;
+    window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
+
+    try {
+      InstructionsBtn.classList.add("menu-button-complete");
+    } catch (e) {}
+    
+    SetSupplementalMenuButton();
+  }
+
+  function UpdateInformationTripleKey(key1, key2, key3, data) {
+    SupplementalInfo_Dict[key1][key2][key3] = data;
+    window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
+
+    try {
+      InstructionsBtn.classList.add("menu-button-complete");
+    } catch (e) {}
+
+    SetSupplementalMenuButton();
+  }
+
+  function AddMalfunction() {
+    const container = document.getElementById("equipmentRelatedInformation");
+    const i = container.querySelectorAll('div.entry-div-cf').length;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = "entry-div-cf";
+
+    wrapper.innerHTML = `
+      <label>Serial No: </label>
+      <input type="text" id="SerialNo${i}" onchange="UpdateInformationTripleKey('equipmentRelatedInformation', ${i}, 0, this.value);">
+      <br>
+      <label>Equipment Type: </label>
+      <input type="text" id="EquipmentType${i}" onchange="UpdateInformationTripleKey('equipmentRelatedInformation', ${i}, 1, this.value);">
+      <br><br>
+      <label>Describe the malfunction: </label>
+      <textarea id="malfunctionDesc${i}" rows="4" onchange="UpdateInformationTripleKey('equipmentRelatedInformation', ${i}, 2, this.value);"></textarea>
+    `;
+
+    container.appendChild(document.createElement("br"));
+    container.appendChild(wrapper);
+
+    SupplementalInfo_Dict.equipmentRelatedInformation.push(["", "", ""]);
+  }
+
+</script>
 </body>
