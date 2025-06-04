@@ -130,12 +130,12 @@
             document.getElementById("taxonomyMenu").style.display = 'none';
             const menu = document.getElementById("taxonomyMenuSingle");
             menu.innerHTML = `<h3 style="margin-top: 0">Instructions:</h3>
-            <p>1. Start by clicking the "Classification" button to select the appropriate severity level (only one is able to be selected)<br>
-                2. Continue to "Primary Pathway Subcode" section and select the primary section of the pathway in which this occured<br>
+            <p>1. Start by clicking the "Classification" button to select the appropriate severity level (maximum of one)<br>
+                2. Continue to "Primary Pathway Subcode" section and select the primary section of the pathway in which this occured (maximum of one)<br>
                 3. If more subcodes apply, please select "Additional Pathway Subcodes" and select all that apply<br>
-                4. Proceed to the "Method of Detection" section and select the area of the pathway that resulted in the detection of the incident (only one is able to be selected)<br>
+                4. Proceed to the "Method of Detection" section and select the area of the pathway that resulted in the detection of the incident (maximum of one)<br>
                 5. Next, proceed to the "Contributory Factors" section and select all the factors that apply<br>
-                6. Proceed to the "Modality" section to select the modailty in which this incident occured<br>
+                6. Proceed to the "Modality" section to select the modailty in which this incident occured (maximum of one)<br>
                 7. Once all coding sections are complete, the assembled incident code will appear in the box above<br>
                 8. If a comprehensive summary of the incident is needed, go to the "Supplemental Info" section and complete all sections</p>`;
             menu.style.display = 'block';
@@ -198,7 +198,7 @@
                         wrapper.className = "taxonomy-entry";
 
                         const label = document.createElement("label");
-                        label.textContent = `Please select the appropriate ${api} (only one is able to be selected)`;
+                        label.textContent = `Please select the appropriate ${api} (maximum of one):`;
                         wrapper.appendChild(label);
                         menu.appendChild(wrapper);
                     {% endif %}
@@ -212,7 +212,7 @@
                         button.id = "btn" + code.split(" ").join("");
                         button.classList.add("toggle-button");
                         button.onclick = () => {
-                            if (otherChecker(description)){
+                            if (otherChecker(description, taxonomy)){
                                 insertRemoveCode(code, taxonomy);
                                 toggleButtons(button.id, "taxonomyMenuSingle");
                             }
@@ -412,19 +412,19 @@
             if (taxonomy == "PPS"){
                 api = "pathwaysubcodes"
                 displayPlaceholder = "Pathway Subcodes"
-                instructions = `Please carefully look through each record and the primary area in the patient pathway in which this incident occured. Only one subcode is able to be selected. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the subcode selected.`
+                instructions = `Please carefully look through each catagory and the primary area in the patient pathway in which this incident occured. Only one subcode is able to be selected. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the subcode selected.`
             } else if (taxonomy == "APS"){
                 api = "pathwaysubcodes"
                 displayPlaceholder = "Pathway Subcodes"
-                instructions = `Please carefully look through each record and select one or more pathway subcodes that best describe the process or pathway involved. You're welcome to choose multiple subcodes if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
+                instructions = `Please carefully look through each catagory and select one or more pathway subcodes that best describe the process or pathway involved. You're welcome to choose multiple subcodes if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
             } else if (taxonomy == "MD"){
                 api = "pathwaysubcodes"
                 displayPlaceholder = "Pathway Subcodes"
-                instructions = `Please carefully look through each record and the primary area in the patient pathway that detected this incident. Only one subcode is able to be selected. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
+                instructions = `Please carefully look through each catagory and the primary area in the patient pathway that detected this incident. Only one subcode is able to be selected. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
             } else if (taxonomy == "CF"){
                 api = "contributoryfactors"
                 displayPlaceholder = "Contributory Factors"
-                instructions = `Please carefully look through each record and select one or more contributory factors that best represent what lead to the incident. You're welcome to choose multiple factors if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
+                instructions = `Please carefully look through each catagory and select one or more contributory factors that best represent what lead to the incident. You're welcome to choose multiple factors if they clearly apply. Refer to the official definitions if you need assistance.<br><br>Press the reset button at the bottom to reset the codes selected.`
             }
 
             menu.innerHTML = `Loading ${api} Categories`;
@@ -462,7 +462,11 @@
                 });
         }
 
-        function otherChecker(description) {
+        function otherChecker(description, taxonomy = "") {
+            if (taxonomy == "Cl") {
+                return true;
+            }
+
             if (description.split(" ")[0].toLowerCase().trim() == "other") {
                 otherCheck = confirm("You have selected a code corresponding to 'Other', would you like to select a more specific code?");
 
