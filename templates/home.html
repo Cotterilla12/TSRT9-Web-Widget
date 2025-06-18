@@ -61,7 +61,7 @@
         function requestCodeFromWidget() {
             const iframe = document.getElementById("widgetIframe");
             // Send a message to the widget requesting its value
-            iframe.contentWindow.postMessage({ action: "getCode" }, "*");
+            iframe.contentWindow.postMessage({ action: "getCodeUnchecked" }, "*");
         }
 
         function requestInfoFromWidget() {
