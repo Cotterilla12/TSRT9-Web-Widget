@@ -16,13 +16,13 @@
     <div class="button-container">
         <div class="button-row">
                 <button id="InstructionsBtn" onclick="showInstructions()">Instructions</button>
-                <button id="ClBtn" onclick="showSingleScreenOptions('Cl')">Classification</button>
+                <button id="ClBtn" onclick="showClassificationOptions('Cl')">Classification</button>
                 <button id="PPSBtn" onclick="showMultiScreenOptions('PPS')">Primary Pathway Subcode</button>
                 <button id="APSBtn" onclick="showMultiScreenOptions('APS')">Additional Pathway Subcodes</button>
                 <button id="MDBtn" onclick="showMultiScreenOptions('MD')">Method of Detection</button>
                 <button id="CFBtn" onclick="showMultiScreenOptions('CF')">Contributory Factors</button>
                 <button id="ModalityBtn" onclick="showSingleScreenOptions('Modality')">Modality</button>
-                <button id="SupplementalBtn" onclick="showSupplementalOptions()">Supplemental Info</button>
+                <button id="SupplementalBtn" onclick="showSupplementalOptions()" disabled="true">Supplemental Info</button>
         </div>
     </div>
     {% endif %}
@@ -181,9 +181,7 @@
             };
 
             let api = "";
-            if (taxonomy == "Cl"){
-                api = "classification"
-            } else if (taxonomy == "Modality"){
+            if (taxonomy == "Modality"){
                 api = "modality"
             }
 
@@ -230,6 +228,26 @@
                             toggleButtons(button.id, "taxonomyMenuSingle")
                         }
                     });
+
+                    if (api == "classification"){
+                        const helpDiv = document.createElement("div");
+                        const helpButton = document.createElement("button");
+
+                        helpDiv.className = "description"
+                        helpDiv.innerHTML = `Please press this for guidance on selecting the appropriate classification: `;
+
+                        helpButton.textContent = "Guidance";
+                        helpButton.id = "classificationGuidanceButton";
+                        helpButton.classList.add("toggle-button");
+                        helpButton.onclick = () => {window.open('/classificationGuidance', '_blank');}
+
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "taxonomy-entry";
+
+                        wrapper.appendChild(helpDiv);
+                        wrapper.appendChild(helpButton);
+                        menu.appendChild(wrapper);
+                    }
                 })
                 .catch(err => {
                     menu.innerHTML = `<p style="color:red;">Failed to load ${api}.</p>`;
@@ -237,7 +255,7 @@
                 });
         }
 
-        let listenerAdded = false;
+        let supplementalListenerAdded = false;
 
         function showSupplementalOptions() {
             document.getElementById("taxonomyMenu").style.display = 'none';
@@ -296,8 +314,8 @@
                 }
             })
             .then(() => {
-                if (!listenerAdded) {
-                    listenerAdded = true;
+                if (!supplementalListenerAdded) {
+                    supplementalListenerAdded = true;
 
                     window.addEventListener("message", function(event) {
                         if (event.data && event.data.action === "taxonomyUpdated") {
@@ -316,6 +334,54 @@
             })
             .catch(error => {
                 menu.innerHTML = "Failed to load supplemental information fields.";
+                console.error(error);
+            });
+        }
+
+        function showClassificationOptions() {
+            document.getElementById("taxonomyMenu").style.display = 'none';
+            const menu = document.getElementById("taxonomyMenuSingle");
+            menu.innerHTML = 'Loading Classifications';
+            menu.style.display = 'block';
+            if ("{{ singleTaxonomy|default('') }}".trim() === "") {
+                toggleMenuButtons("ClBtn");
+            };
+
+            let fetchString = "/classificationGuidance";
+
+            // Loading data for anatomical sites and then loading all other information
+            fetch(fetchString)
+            .then(response => response.text())
+            .then(html => {
+                menu.innerHTML = html;
+
+                // Re-execute any <script> tags
+                Array.from(menu.querySelectorAll("script")).forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    oldScript.replaceWith(newScript);
+                });
+
+                return new Promise(resolve => setTimeout(resolve, 0));  // wait for DOM update
+            })
+            .then(() => {
+                const event = new CustomEvent("classificationContentLoaded", {
+                    detail: { section: "classification" }
+                });
+
+                const target = document.getElementById("ClassificationSelectionWindow");
+                if (target) {
+                    target.dispatchEvent(event);
+                } else {
+                    console.error("ClassificationSelectionWindow not found after fetch");
+                }
+            })
+            .catch(error => {
+                menu.innerHTML = "Failed to load classiification fields.";
                 console.error(error);
             });
         }
@@ -722,7 +788,10 @@
         }
 
         window.addEventListener("message", function(event) {
-            // Optionally, validate event.origin here.
+            if (event.data && event.data.action === "unlock") {
+                document.getElementById("SupplementalBtn").disabled = false;
+            }
+
             if (event.data && event.data.action === "getCodeUnchecked") {
                 const value = document.getElementById("mainTextBox").value;
                 window.parent.postMessage({ action: "sendCodeUnchecked", value: value }, "*");

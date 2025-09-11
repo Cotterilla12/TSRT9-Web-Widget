@@ -223,6 +223,10 @@ def widgetSingle(taxonomy, code=""):
 def web_developer_information():
     return render_template("webdeveloperinformation.html")
 
+@app.route("/classificationGuidance")
+def classificationGuidance():
+    return render_template("classificationGuidance.html")
+
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8080))

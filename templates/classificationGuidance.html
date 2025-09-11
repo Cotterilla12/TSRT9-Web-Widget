@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TSRT9</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="ClassificationSelectionWindow">
+        <div  class="taxonomy-entry" id="switcher">
+            <label for="buttons">Buttons</label>
+            <input type="radio" id="buttons" name="classificationInterface" value="buttons" onclick="GuidedOrButtons(this.value)" checked>
+            <input type="radio" id="guided" name="classificationInterface" value="guided" onclick="GuidedOrButtons(this.value)">
+            <label for="guided">Guided</label>
+        </div>
+        
+        <div id="buttonClassificationMenu">
+            <div class="taxonomy-entry">
+                <button id="btnLevel1" class="toggle-button" onclick="ButttonClick(this, 'unneeded', 'Level 1', 'Cl')">Level 1</button>
+                <div class="description">
+                    <strong>Reportable radiation incident or other notifiable event</strong>
+                </div>
+            </div>
+
+            <div class="taxonomy-entry">
+                <button id="btnLevel2" class="toggle-button" onclick="ButttonClick(this, 'unneeded', 'Level 2', 'Cl')">Level 2</button>
+                <div class="description">
+                    <strong>Non-reportable moderate radiation or MRI incident</strong>
+                </div>
+            </div>
+
+            <div class="taxonomy-entry">
+                <button id="btnLevel3" class="toggle-button" onclick="ButttonClick(this, 'unneeded', 'Level 3', 'Cl')">Level 3</button>
+                <div class="description">
+                    <strong>Non reportable minor radiation or MRI incident </strong>
+                </div>
+            </div>
+
+            <div class="taxonomy-entry">
+                <button id="btnLevel4" class="toggle-button" onclick="ButttonClick(this, 'unneeded', 'Level 4', 'Cl')">Level 4</button>
+                <div class="description">
+                    <strong>Good catch</strong>
+                </div>
+            </div>
+            
+            <div class="taxonomy-entry">
+                <button id="btnLevel5" class="toggle-button" onclick="ButttonClick(this, 'unneeded', 'Level 5', 'Cl')">Level 5</button>
+                <div class="description">
+                    <strong>Other non-conformance </strong>
+                </div>
+            </div>
+        </div>
+
+        <div id="guidedClassificationMenu" style="margin-left: 10px; margin-right: 10px;" hidden="true">
+            <div>
+                <p>This guidance was taken from <a href="https://assets.publishing.service.gov.uk/media/6813447070b095d0d70117f4/national-patient-safety-radiotherapy-event-taxonomy.pdf">Safer radiotherapy: National patient safety radiotherapy event taxonomy</a>, and can be found on page 18, Appendix 1</p>
+            </div>
+
+            <div class="entry-div" id="Q1">
+                <label id="Q1Label" for="Q1Select">
+                    1. Was radiation, other than intended, delivered to the patient?
+                </label>
+                <select id="Q1Select" onchange="Q1Selection(this.value)">
+                    <option value=""></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            
+            <div class="entry-div" id="QReportable" hidden="true">
+                <label id="QReportableLabel" for="QReportableSelect">
+                    2. Was the incident reportable?
+                </label>
+                <select id="QReportableSelect" onchange="QReportableSelection(this.value)">
+                    <option value=""></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="entry-div" id="QSignificance" hidden="true">
+                <label id="QSignificanceLabel" for="QSignificanceSelect">
+                    3. Was the incident potentially significant to the patient's treatment?
+                </label>
+                <select id="QSignificanceSelect" onchange="QSignificanceSelection(this.value)">
+                    <option value=""></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="entry-div" id="QPotential" hidden="true">
+                <label id="QPotentialLabel" for="QPotentialSelect">
+                    2. Was there the potential for a radiation or MRI incident?
+                </label>
+                <select id="QPotentialSelect" onchange="QPotentialSelection(this.value)">
+                    <option value=""></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div id="title">
+                <h3>Classification Guidance:</h3>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("ClassificationSelectionWindow").addEventListener("classificationContentLoaded", (e) => {
+            if (Displayed_Cl != "") {
+                toggleButtons(
+                    "btn" + Displayed_Cl.replace(/\s/g,''),
+                    "buttonClassificationMenu"
+                );
+            }
+        });
+
+        function GuidedOrButtons(interface){
+            if (interface == "buttons") {
+                document.getElementById("buttonClassificationMenu").hidden = false;
+                document.getElementById("guidedClassificationMenu").hidden = true;
+
+                if (Displayed_Cl != "") {
+                    toggleButtons(
+                        "btn" + Displayed_Cl.replace(/\s/g,''),
+                        "buttonClassificationMenu"
+                    );
+                }
+            } else if (interface == "guided"){
+                document.getElementById("buttonClassificationMenu").hidden = true;
+                document.getElementById("guidedClassificationMenu").hidden = false;
+
+                if (Displayed_Cl != "") {
+                    LoadClassification(Displayed_Cl);
+                }
+            }
+        }
+
+        function LoadClassification(classification) {
+            if (classification != "") {
+                if (classification == "Level 1") {
+                    document.getElementById("Q1Select").value = "Yes";
+                    Q1Selection("Yes");
+
+                    document.getElementById("QReportableSelect").value = "Yes";
+                    QReportableSelection("Yes");
+                } else if (classification == "Level 2") {
+                    document.getElementById("Q1Select").value = "Yes";
+                    Q1Selection("Yes");
+
+                    document.getElementById("QReportableSelect").value = "No";
+                    QReportableSelection("No");
+
+                    document.getElementById("QSignificanceSelect").value = "Yes";
+                    QSignificanceSelection("Yes");
+                } else if (classification == "Level 3") {
+                    document.getElementById("Q1Select").value = "Yes";
+                    Q1Selection("Yes");
+
+                    document.getElementById("QReportableSelect").value = "No";
+                    QReportableSelection("No");
+
+                    document.getElementById("QSignificanceSelect").value = "No";
+                    QSignificanceSelection("No");                
+                } else if (classification == "Level 4") {
+                    document.getElementById("Q1Select").value = "No";
+                    Q1Selection("No");
+
+                    document.getElementById("QPotentialSelect").value = "Yes";
+                    QPotentialSelection("Yes");
+                } else if (classification == "Level 5") {
+                    document.getElementById("Q1Select").value = "No";
+                    Q1Selection("No");
+
+                    document.getElementById("QPotentialSelect").value = "No";
+                    QPotentialSelection("No");
+                }
+            }
+        }
+
+        function Q1Selection(incident) {
+            if (incident == "Yes"){
+                document.getElementById("QReportable").hidden = false;
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance:</h3>`;
+            } else if (incident == "No") {
+                document.getElementById("QReportable").hidden = true;
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("QPotential").hidden = false;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance:</h3>`;
+            } else {
+                document.getElementById("QReportable").hidden = true;
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance:</h3>`;
+            }
+        }
+
+        function QReportableSelection(incident) {
+            let taxonomyChange = false;
+
+            if (incident == "Yes"){
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance: <span style="color:red;">Level 1</span></h3>`;
+                Displayed_Cl = "Level 1"
+                taxonomyChange = true;
+            } else if (incident == "No") {
+                document.getElementById("QSignificance").hidden = false;
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance:</h3>`;
+            } else {
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance:</h3>`;
+            }
+
+            if (taxonomyChange) {
+                UpdateTextbox();
+                updateMenuButtonStatus();
+
+                // Inform the parent window the taxonomies have been updated
+                window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
+            }
+        }
+
+        function QSignificanceSelection(incident) {
+            let taxonomyChange = false;
+
+            if (incident == "Yes"){
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance: <span style="color:red;">Level 2</span></h3>`;
+                Displayed_Cl = "Level 2"
+                taxonomyChange = true;
+            } else if (incident == "No") {
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance: <span style="color:red;">Level 3</span></h3>`;
+                Displayed_Cl = "Level 3"
+                taxonomyChange = true;
+            } else {
+                document.getElementById("QPotential").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance:</h3>`;
+            }
+
+            if (taxonomyChange) {
+                UpdateTextbox();
+                updateMenuButtonStatus();
+
+                // Inform the parent window the taxonomies have been updated
+                window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
+            }
+        }
+
+        function QPotentialSelection(incident) {
+            let taxonomyChange = false;
+
+            if (incident == "Yes"){
+                document.getElementById("QReportable").hidden = true;
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance: <span style="color:red;">Level 4</span></h3>`;
+                Displayed_Cl = "Level 4"
+                taxonomyChange = true;
+            } else if (incident == "No") {
+                document.getElementById("QReportable").hidden = true;
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance: <span style="color:red;">Level 5</span></h3>`;
+                Displayed_Cl = "Level 5"
+                taxonomyChange = true;
+            } else {
+                document.getElementById("QReportable").hidden = true;
+                document.getElementById("QSignificance").hidden = true;
+                document.getElementById("title").innerHTML = `<h3>Classification Guidance:</h3>`;
+            }
+
+            if (taxonomyChange) {
+                UpdateTextbox();
+                updateMenuButtonStatus();
+
+                // Inform the parent window the taxonomies have been updated
+                window.parent.postMessage({ action: "taxonomyUpdated" }, "*");
+            }
+        }
+
+        function ButttonClick(button, description, code, taxonomy){
+            if (otherChecker(description, taxonomy)){
+                insertRemoveCode(code, taxonomy);
+                toggleButtons(button.id, "buttonClassificationMenu");
+                }
+        }
+    </script>
+</body>

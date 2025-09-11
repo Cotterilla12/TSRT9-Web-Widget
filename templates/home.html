@@ -54,14 +54,14 @@
             <button onclick="requestInfoFromWidget()">Copy Info</button>
         </div>
         <p>To copy the code to your clipboard, please press "Copy Code", if you would like to copy the supplemental information please press "Copy Info"</p>
-        <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdzvE2fIhrAjYww1oQqb45hb0GNT-_wDDvQ7GWrh6M9XQeJSg/viewform?usp=dialog')" />Feedback Form</button><br>
-        <button onclick="window.location.href='/webdeveloperinformation';">Web developer information</button>
+        <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdzvE2fIhrAjYww1oQqb45hb0GNT-_wDDvQ7GWrh6M9XQeJSg/viewform?usp=dialog')">Feedback Form</button><br>
+        <button onclick="window.open('/webdeveloperinformation')">Web developer information</button>
     </div>
     <script>
         function requestCodeFromWidget() {
             const iframe = document.getElementById("widgetIframe");
             // Send a message to the widget requesting its value
-            iframe.contentWindow.postMessage({ action: "getCode" }, "*");
+            iframe.contentWindow.postMessage({ action: "getCodeUnchecked" }, "*");
         }
 
         function requestInfoFromWidget() {
@@ -72,10 +72,18 @@
         
         window.addEventListener("message", function(event) {
             // Validate event.origin here in a production app for security.
-            if (event.data && event.data.action === "sendCode") {
+            if (event.data && event.data.action === "sendCodeUnchecked") {
                 navigator.clipboard.writeText(event.data.value);
             } else if (event.data && event.data.action === "sendInfo") {
                 navigator.clipboard.writeText(event.data.value);
+            }
+        });
+
+        window.addEventListener("keydown", function(event) {
+            if (event.ctrlKey && event.key.toLowerCase() === "u") {
+                event.preventDefault();
+                const iframe = document.getElementById("widgetIframe");
+                iframe.contentWindow.postMessage({ action: "unlock" }, "*");
             }
         });
       </script>
