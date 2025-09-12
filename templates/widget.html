@@ -174,7 +174,7 @@
         function showSingleScreenOptions(taxonomy) {
             document.getElementById("taxonomyMenu").style.display = 'none';
             const menu = document.getElementById("taxonomyMenuSingle");
-            menu.innerHTML = 'Loading Classifications';
+            menu.innerHTML = 'Loading options';
             menu.style.display = 'block';
             if ("{{ singleTaxonomy|default('') }}".trim() === "") {
                 toggleMenuButtons(taxonomy + "Btn");
