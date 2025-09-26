@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, jsonify, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 import pandas as pd
 import numpy as np
 import os
@@ -133,6 +134,7 @@ def description(knownCode):
     return ""
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 @app.after_request
 def allow_iframe(response):
@@ -233,5 +235,5 @@ def healthz():
 
 if __name__ == "__main__":
     import os
-    port = int(os.environ.get("PORT", 80))
+    port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port, debug=False)
