@@ -16,7 +16,7 @@
     <div class="button-container">
         <div class="button-row">
                 <button id="InstructionsBtn" onclick="showInstructions()">Instructions</button>
-                <button id="ClBtn" onclick="showClassificationOptions('Cl')">Classification</button>
+                <button id="ClBtn" onclick="showClassificationOptions()">Classification</button>
                 <button id="PPSBtn" onclick="showMultiScreenOptions('PPS')">Primary Pathway Subcode</button>
                 <button id="APSBtn" onclick="showMultiScreenOptions('APS')">Additional Pathway Subcodes</button>
                 <button id="MDBtn" onclick="showMultiScreenOptions('MD')">Method of Detection</button>
@@ -742,7 +742,8 @@
         }
 
         function supplementalIsActive () {
-            return document.getElementById("SupplementalBtn").classList.contains("selected-button");
+            const btn = document.getElementById("SupplementalBtn");
+            return btn ? btn.classList.contains("selected-button") : false;
         }
 
         function clearText() {
@@ -774,10 +775,14 @@
             };
 
             try {
-                if (supplementalIsActive()) {
+                if (taxonomy == "SUPPLEMENTALINFO" || supplementalIsActive()) {
                     showSupplementalOptions();
+                } else if (taxonomy == "CL") {
+                    showClassificationOptions();
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.log("Error clearing text")
+            }
 
             Displayed_CF.forEach(cf => {
                 SupplementalInfo_Dict.CFdescription[cf] = "";
@@ -905,8 +910,10 @@
 
             var singleTax = "{{ singleTaxonomy|default('') }}".toUpperCase();
             if (singleTax) {
-                if (["CL", "MODALITY"].includes(singleTax)){
-                    showSingleScreenOptions(singleTax.charAt(0).toUpperCase() + singleTax.slice(1).toLowerCase())
+                if (singleTax == "CL") {
+                    showClassificationOptions();
+                } else if (singleTax == "MODALITY") {
+                    showSingleScreenOptions(singleTax.charAt(0).toUpperCase() + singleTax.slice(1).toLowerCase());
                 } else if (["PPS", "APS", "MD", "CF"].includes(singleTax)){
                     showMultiScreenOptions(singleTax);
                 } else if (singleTax == "SUPPLEMENTALINFO") {
