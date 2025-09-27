@@ -186,22 +186,23 @@
 
         <code>
 &lt;script&gt;
-function requestValueFromWidget(iframeID) {
-    const iframe = document.getElementById(iframeID);
-    iframe.contentWindow.postMessage({ action: "getValue" }, "*");
+function requestCodeFromWidget() {
+    const iframe = document.getElementById("IframeID");
+    // Send a message to the widget requesting its value
+    iframe.contentWindow.postMessage({ action: "getCodeUnchecked" }, "*");
 }
 
-function requestInfoFromWidget(iframeID) {
-    const iframe = document.getElementById(iframeID);
+function requestInfoFromWidget() {
+    const iframe = document.getElementById("IframeID");
+    // Send a message to the widget requesting its value
     iframe.contentWindow.postMessage({ action: "getInfo" }, "*");
 }
 
 window.addEventListener("message", function(event) {
-    if (event.data && event.data.action === "sendValue") {
-        console.log("Widget Value:", event.data.value);
+    // Validate event.origin here in a production app for security.
+    if (event.data && event.data.action === "sendCodeUnchecked") {
         navigator.clipboard.writeText(event.data.value);
     } else if (event.data && event.data.action === "sendInfo") {
-        console.log("Widget Value:", event.data.value);
         navigator.clipboard.writeText(event.data.value);
     }
 });
@@ -210,7 +211,7 @@ window.addEventListener("message", function(event) {
 
         <p>The button below demonstrates retrieving a TSRT9 code from the final embedded widget above:</p>
 
-        <button class="copy-button" onclick="requestValueFromWidget('widgetIframePC')">Copy Code</button>
+        <button class="copy-button" onclick="requestCodeFromWidget('widgetIframePC')">Copy Code</button>
 
         <p>The button below demonstrates retrieving the supplemental information from the final embedded widget above:</p>
 
@@ -224,22 +225,23 @@ window.addEventListener("message", function(event) {
         <button onclick="window.location.href='{{ url_for('home') }}';">Return Home</button>
     </div>
     <script>
-        function requestValueFromWidget(iframeID) {
-            const iframe = document.getElementById(iframeID);
-            iframe.contentWindow.postMessage({ action: "getValue" }, "*");
+        function requestCodeFromWidget() {
+            const iframe = document.getElementById("widgetIframePC");
+            // Send a message to the widget requesting its value
+            iframe.contentWindow.postMessage({ action: "getCodeUnchecked" }, "*");
         }
 
-        function requestInfoFromWidget(iframeID) {
-            const iframe = document.getElementById(iframeID);
+        function requestInfoFromWidget() {
+            const iframe = document.getElementById("widgetIframePC");
+            // Send a message to the widget requesting its value
             iframe.contentWindow.postMessage({ action: "getInfo" }, "*");
         }
 
         window.addEventListener("message", function(event) {
-            if (event.data && event.data.action === "sendValue") {
-                console.log("Widget Value:", event.data.value);
+            // Validate event.origin here in a production app for security.
+            if (event.data && event.data.action === "sendCodeUnchecked") {
                 navigator.clipboard.writeText(event.data.value);
             } else if (event.data && event.data.action === "sendInfo") {
-                console.log("Widget Value:", event.data.value);
                 navigator.clipboard.writeText(event.data.value);
             }
         });
