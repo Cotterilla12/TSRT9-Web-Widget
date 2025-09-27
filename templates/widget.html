@@ -741,8 +741,8 @@
             {% endif %}
         }
 
-        function supplementalIsActive () {
-            const btn = document.getElementById("SupplementalBtn");
+        function buttonIsActive(tax){
+            const btn = document.getElementById(tax + "Btn");
             return btn ? btn.classList.contains("selected-button") : false;
         }
 
@@ -775,9 +775,9 @@
             };
 
             try {
-                if (taxonomy == "SUPPLEMENTALINFO" || supplementalIsActive()) {
+                if (taxonomy == "SUPPLEMENTALINFO" || buttonIsActive("Supplemental")) {
                     showSupplementalOptions();
-                } else if (taxonomy == "CL") {
+                } else if (taxonomy == "CL" || buttonIsActive("Cl")) {
                     showClassificationOptions();
                 }
             } catch (e) {
