@@ -628,8 +628,10 @@
                                 checkbox.checked = document.getElementById("mainTextBox").value.includes(code);
                             }
                             checkbox.onchange = () => {
-                                if (otherChecker(label)) {
-                                    insertRemoveCode(code, taxonomy, checkbox.checked)
+                                if (!checkbox.checked) {
+                                    insertRemoveCode(code, taxonomy, checkbox.checked);
+                                } else if (otherChecker(label)) {
+                                    insertRemoveCode(code, taxonomy, checkbox.checked);
                                 } else {
                                     checkbox.checked = false;
                                 }
