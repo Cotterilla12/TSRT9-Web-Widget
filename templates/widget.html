@@ -224,7 +224,12 @@
                         wrapper.appendChild(desc);
                         menu.appendChild(wrapper);
 
-                        if (document.getElementById("mainTextBox").value.includes(code)){
+                        let codeValue = code;
+                        if (api == "modality"){
+                            codeValue = " " + code;
+                        }
+
+                        if (document.getElementById("mainTextBox").value.includes(codeValue)){
                             toggleButtons(button.id, "taxonomyMenuSingle")
                         }
                     });
