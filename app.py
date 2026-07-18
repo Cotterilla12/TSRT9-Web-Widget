@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, jsonify, request
+from flask import Flask, render_template, redirect, url_for, jsonify, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
 import pandas as pd
 import numpy as np
@@ -143,53 +143,13 @@ def allow_iframe(response):
     response.headers['Content-Security-Policy'] = "frame-ancestors *"
     return response
 
-@app.route("/api/classification")
-def api_classification():
-    return jsonify(classifications)
-
-@app.route("/api/pathwaysubcodes", defaults={"category": None})
-@app.route("/api/pathwaysubcodes/<path:category>")
-def api_pathway(category=""):
-    if category is None:
-        return jsonify(sorted(list(pathwaySubcodes.keys()), key = lambda x: int(x.split(" ")[0])))
-    if category in pathwaySubcodes:
-        return jsonify(pathwaySubcodes[category])
-    else:
-        return jsonify({"error": f"Category '{category}' not found"}), 404
-
-@app.route("/api/contributoryfactors", defaults={"category": None})
-@app.route("/api/contributoryfactors/<path:category>")
-def api_causative(category):
-    if category is None:
-        return jsonify(sorted(list(contributoryFactors.keys()), key = lambda x: int(x[2])))
-    return jsonify(contributoryFactors[category])
-
-@app.route("/api/supplementalinfo/<path:renderInfo>")
-def api_supplementainfo(renderInfo):
-    renderInfo = renderInfo.split("/")
-
-    sites = [item[0] for item in pd.read_csv("data/Sites.csv").values.tolist()]
-
-    if len(renderInfo) == 1:
-        return render_template("supplementalinfo.html", sites=sites, equipMalfunctions = int(renderInfo[0]))
-    
-    cfDict = {}
-    mdDict = {}
-    for code in renderInfo[:-1]:
-        searchCode = code
-
-        if searchCode[0:2] == "MD":
-            searchCode = searchCode[2:]
-            mdDict[code] = description(searchCode)
-            continue
-        
-        cfDict[searchCode] = description(searchCode)
-    
-    return render_template("supplementalinfo.html", sites=sites, equipMalfunctions = int(renderInfo[-1]), cfDict = cfDict, mdDict = mdDict)
-
-@app.route("/api/modality")
-def api_modality():
-    return jsonify(modalities)
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        app.static_folder,
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon"
+    )
 
 @app.route("/TSRT9/<path:code>")
 @app.route("/TSRT9 /<path:code>")
@@ -205,7 +165,17 @@ def widget(code = ""):
     code = code.replace(" ", "")
     CL, PPS, APS, MD, CFs, Modality = SanatiseCodes(code)
     return render_template("widget.html",
-                       ClTaxonomy=CL, PPSTaxonomy=PPS, APSTaxonomy=APS, MDTaxonomy=MD, CFTaxonomy=CFs, modalityTaxonomy = Modality)
+                       ClTaxonomy=CL,
+                       PPSTaxonomy=PPS,
+                       APSTaxonomy=APS,
+                       MDTaxonomy=MD,
+                       CFTaxonomy=CFs,
+                       modalityTaxonomy=Modality,
+                       classificationGuidanceHTML=render_template("classificationGuidance.html"),
+                       taxonomyData = {"pathwaySubcodes": pathwaySubcodes,
+                                       "contributoryFactors": contributoryFactors,
+                                       "classifications": classifications,
+                                       "modalities": modalities})
 
 @app.route("/widget/<taxonomy>/TSRT9/<path:code>")
 @app.route("/widget/<taxonomy>/TSRT9 /<path:code>")
@@ -219,15 +189,21 @@ def widgetSingle(taxonomy, code=""):
         PPS = []
 
     return render_template("widget.html", singleTaxonomy=taxonomy,
-                           ClTaxonomy=CL, PPSTaxonomy=PPS, APSTaxonomy=APS, MDTaxonomy=MD, CFTaxonomy=CFs, modalityTaxonomy = Modality)
+                           ClTaxonomy=CL,
+                           PPSTaxonomy=PPS,
+                           APSTaxonomy=APS,
+                           MDTaxonomy=MD,
+                           CFTaxonomy=CFs,
+                           modalityTaxonomy = Modality,
+                           classificationGuidanceHTML=render_template("classificationGuidance.html"),
+                           taxonomyData = {"pathwaySubcodes": pathwaySubcodes,
+                                           "contributoryFactors": contributoryFactors,
+                                           "classifications": classifications,
+                                           "modalities": modalities})
 
 @app.route("/webdeveloperinformation")
 def web_developer_information():
     return render_template("webdeveloperinformation.html")
-
-@app.route("/classificationGuidance")
-def classificationGuidance():
-    return render_template("classificationGuidance.html")
 
 @app.route("/health")
 def healthz():

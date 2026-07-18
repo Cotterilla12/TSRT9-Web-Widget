@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <meta charset="UTF-8">
     <title>TSRT9 Error Code Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -42,7 +43,18 @@
 <body>
     <div class="container">
         <h1 style="margin-top: 0;">TSRT9 Error Code Generator</h1>
-        <p>Please use this tool to facilitate the creation of TSRT9 error codes</p>
+        <p>
+            Please use this tool to facilitate the creation of TSRT9 error codes.
+            It is a practical implementation of the
+            <a
+                href="https://assets.publishing.service.gov.uk/media/6813447070b095d0d70117f4/national-patient-safety-radiotherapy-event-taxonomy.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Safer radiotherapy: National patient safety radiotherapy event taxonomy
+            </a>
+            , please refer to the document for more information and guidance.
+        </p>
         {% if initialCode %}
             <iframe id="widgetIframe" src="/widget/TSRT9/{{ initialCode|urlencode }}"></iframe>
         {% else %}
@@ -76,14 +88,6 @@
                 navigator.clipboard.writeText(event.data.value);
             } else if (event.data && event.data.action === "sendInfo") {
                 navigator.clipboard.writeText(event.data.value);
-            }
-        });
-
-        window.addEventListener("keydown", function(event) {
-            if (event.ctrlKey && event.key.toLowerCase() === "u") {
-                event.preventDefault();
-                const iframe = document.getElementById("widgetIframe");
-                iframe.contentWindow.postMessage({ action: "unlock" }, "*");
             }
         });
       </script>
