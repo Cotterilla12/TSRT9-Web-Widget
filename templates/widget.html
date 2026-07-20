@@ -226,8 +226,9 @@
                             }
                         }
 
-                        const desc = document.createElement("div");
+                        const desc = document.createElement("label");
                         desc.className = "description";
+                        desc.htmlFor = button.id;
                         desc.innerHTML = `<strong>${description}</strong>`;
 
                         wrapper.appendChild(button);
@@ -535,6 +536,7 @@
                             }
 
                             const buttonLabel = document.createElement("label");
+                            buttonLabel.htmlFor = button.id;
                             buttonLabel.innerHTML = label;
 
                             wrapper.appendChild(button);
